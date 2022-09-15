@@ -1,6 +1,6 @@
 # BLRevive Docker Server
 
-A Docker implementation of the Blacklight: Retribution Revive server.
+A Docker implementation of the [Blacklight: Retribution Revive](https://gitlab.com/blrevive) server.
 
 **NOTE**: As of yet, the Wine setup is pretty much everything-and-the-kitchen-sink. Image weight will be made *much* lighter later down the line.
 
