@@ -1,0 +1,187 @@
+# Maintainer: alt <north4mp@gmail.com>
+pkgname=blrevive-server-wine
+pkgver=7.0
+pkgrel=0
+pkgdesc="Tailored Wine build to run a Blacklight: Retribution Revived dedicated server on Docker Alpine"
+
+# BL:RE is exclusively 32 bits, probably better to build a completely 32 bits pkg
+# arch="x86 x86_64"
+arch="x86"
+url="https://www.winehq.org"
+license="LGPL-2.0-or-later"
+
+options="textrels !check" # As of 2.0.3 most of the tests fails
+subpackages="$pkgname-dev $pkgname-doc"
+depends_dev="$pkgname perl"
+# Game is fine starting without a display, wonder if mesa is even necessary
+makedepends="
+	autoconf
+	automake
+	bison
+	flex
+	gnutls-dev
+	libxi-dev
+	libxrandr-dev
+	libxrender-dev
+	mesa-dev
+	mingw-w64-gcc
+	mingw-w64-binutils
+	linux-headers
+	"
+source="https://dl.winehq.org/wine/source/7.0/wine-$pkgver.tar.xz
+	rpath.patch
+	"
+builddir="$srcdir/wine-$pkgver"
+
+prepare() {
+	default_prepare
+	# fix opencl header detection
+	sed 's|OpenCL/opencl.h|CL/opencl.h|g' -i configure*
+}
+
+build() {
+	case "$CARCH" in
+	x86_64)
+		local _win64=--enable-win64
+		;;
+	x86)
+		local _no_pie="-no-pie"
+		;;
+	esac
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr \
+		--libdir=/usr/lib \
+		--sysconfdir=/etc \
+		--localstatedir=/var \
+		--with-mingw \
+		--with-x \
+		--with-gnutls \
+		--with-xinput2 \
+		--without-alsa \
+		--without-capi \
+		--without-coreaudio \
+		--without-cups \
+		--without-dbus \
+		--without-fontconfig \
+		--without-freetype \
+		--without-gettext \
+		--without-gphoto \
+		--without-gssapi \
+		--without-gstreamer \
+		--without-inotify \
+		--without-krb5 \
+		--without-ldap \
+		--without-netapi \
+		--without-openal \
+		--without-opencl \
+		--without-oss \
+		--without-pcap \
+		--without-pulse \
+		--without-sane \
+		--without-sdl \
+		--without-udev \
+		--without-usb \
+		--without-v4l2 \
+		--without-vulkan \
+		--without-xcomposite \
+		--without-xcursor \
+		--without-xfixes \
+		--without-xinerama \
+		--without-xinput \
+		--without-xrandr \
+		--without-xrender \
+		--without-xshape \
+		--without-xshm \
+		--without-xxf86vm \
+		\
+		--disable-d2d1 --disable-d3d10 --disable-d3d10_1 --disable-d3d10core --disable-d3d11 --disable-d3d12 --disable-d3d8 \
+		--disable-d3d8thk --disable-d3dcompiler_33 --disable-d3dcompiler_34 --disable-d3dcompiler_35 --disable-d3dcompiler_36 \
+		--disable-d3dcompiler_37 --disable-d3dcompiler_38 --disable-d3dcompiler_39 --disable-d3dcompiler_40 --disable-d3dcompiler_41 --disable-d3dcompiler_42 \
+        --disable-d3dcompiler_46 --disable-d3dim --disable-d3dim700 --disable-d3drm --disable-d3dx10_33 \
+		--disable-d3dx10_34 --disable-d3dx10_35 --disable-d3dx10_36 --disable-d3dx10_37 --disable-d3dx10_38 --disable-d3dx10_39 --disable-d3dx10_40 \
+		--disable-d3dx10_41 --disable-d3dx10_42 --disable-d3dx10_43 --disable-d3dx11_42 --disable-d3dx11_43 \
+		--disable-d3dx9_24 --disable-d3dx9_25 --disable-d3dx9_26 --disable-d3dx9_27 --disable-d3dx9_28 --disable-d3dx9_29 \
+		--disable-d3dx9_30 --disable-d3dx9_31 --disable-d3dx9_32 --disable-d3dx9_33 --disable-d3dx9_34 --disable-d3dx9_35 \
+		--disable-d3dx9_37 --disable-d3dx9_38 --disable-d3dx9_39 --disable-d3dx9_40 --disable-d3dx9_41 --disable-d3dx9_42 \
+		--disable-msvcirt --disable-msvcm80 \
+		--disable-msvcm90 --disable-msvcp100 --disable-msvcp120 --disable-msvcp120_app --disable-msvcp60 --disable-msvcp70 --disable-msvcp71 \
+		--disable-msvcp80 --disable-msvcp_win --disable-msvcr120 --disable-msvcr120_app --disable-msvcr70 --disable-msvcr71 --disable-msvcr80 \
+		\
+		--disable-tests --disable-notepad --disable-msxml --disable-msxml2 --disable-msxml3 --disable-msxml4 \
+		--disable-msxml6 --disable-msado15 --disable-msdaps --disable-msdasql \
+		--disable-quartz --disable-sapi --disable-wineps_drv --disable-winspool_drv --disable-mp3dmod --disable-winedbg \
+		\
+		--disable-fntcache --disable-fontsub --disable-fusion --disable-fwpuclnt --disable-gameux --disable-gamingtcui --disable-gdiplus --disable-glu32 \
+		--disable-gphoto2_ds --disable-gpkcsp --disable-hal --disable-hlink --disable-hnetcfg --disable-iccvid --disable-icmp --disable-ieframe \
+		--disable-ieproxy --disable-imagehlp --disable-inetcomm --disable-inetcpl_cpl --disable-inetmib1 --disable-infosoft --disable-initpki \
+		--disable-inkobj --disable-inseng --disable-iprop --disable-irprops_cpl --disable-itircl --disable-itss --disable-joy_cpl --disable-jscript \
+		--disable-jsproxy --disable-ksproxy_ax --disable-ksuser --disable-ktmw32 --disable-loadperf --disable-localspl --disable-localui --disable-lz32 \
+		--disable-mapi32 --disable-mapistub --disable-mciavi32 --disable-mcicda --disable-mciqtz32 --disable-mciseq --disable-mciwave --disable-mf \
+		--disable-mf3216 --disable-mferror --disable-mfmediaengine --disable-mfplat --disable-mfplay --disable-mfreadwrite --disable-mgmtapi \
+		--disable-midimap --disable-mmcndmgr --disable-msasn1 --disable-mscat32 --disable-mscms --disable-mscorwks --disable-msctf \
+		--disable-msctfmonitor --disable-msctfp --disable-msdelta --disable-msdrm --disable-msftedit --disable-mshtml --disable-mshtml_tlb --disable-msi \
+		--disable-msident --disable-msimg32 --disable-msimsg --disable-msimtf --disable-msisys_ocx --disable-msls31 --disable-msnet32 --disable-mspatcha \
+		--disable-msports --disable-msrle32 --disable-msscript_ocx --disable-mssign32 --disable-mssip32 --disable-mstask
+
+		# Still a metric ton of potential disables, check https://github.com/pg9182/northstar-dedicated/blob/master/src/wine/APKBUILD for examples
+
+		# BLRE seemingly uses d3dcompiler_47 (which is linked to d3dcompiler_43) and d3dx9_43 (linked to d3dx9_36 + plain d3dx9)
+		# It may also use d3dxof so it is still in just in case
+		# Same vein, seems like the following VCR/Ps are in use: msvcr90 msvcr100 msvcr110 msvcp90 msvcp110 msvcp140
+		# See winedbg dump in https://gitlab.com/blrevive/modules/loadout-manager/-/issues/2
+
+		# Proxy and fmt use mscoree
+
+	make LDFLAGS="$LDFLAGS $_no_pie" tools/winedump/winedump
+	make
+}
+
+package() {
+	make DESTDIR="$pkgdir" install
+
+	install -Dm755 tools/wineapploader \
+		"$pkgdir"/usr/bin/wineapploader
+
+	local file
+	for file in msiexec notepad regedit regsvr32 wineboot \
+		winecfg wineconsole winefile winemine winepath
+	do
+		if rm "$pkgdir"/usr/bin/$file; then
+			ln -sf /usr/bin/wineapploader "$pkgdir"/usr/bin/$file
+		fi
+	done
+
+	case "$CARCH" in
+	x86_64)
+		x86_64-w64-mingw32-strip --strip-unneeded "$pkgdir"/usr/lib/wine/x86_64-windows/*.dll
+		;;
+	x86)
+		i686-w64-mingw32-strip --strip-unneeded "$pkgdir"/usr/lib/wine/i386-windows/*.dll
+		;;
+	esac
+}
+
+dev() {
+	default_dev
+
+	install -d "$subpkgdir"/usr/bin
+
+	local file
+	for file in widl wmc wrc winebuild winedump function_grep.pl \
+		winedbg winemaker winegcc winecpp wineg++
+	do
+		mv "$pkgdir"/usr/bin/$file "$subpkgdir"/usr/bin/ || true
+	done
+}
+
+doc() {
+	default_doc
+	rm -fr "$subpkgdir"/usr/share/man/*.UTF-8
+}
+
+sha512sums="
+eec17b046ed5447eb540f421c9b2748d9419ce087496c2743a9914fd27bbe5ff9da0cfe47d3cd76fa97323bd1188a1d82b1eef4968d86ed1957dc1a95e28529c  wine-7.0.tar.xz
+d42a367d30b93fe36b8d6418d53f3c931debef2e9b77bc73e22fff04f5f0d7b9e6622beb78592c814beb32ca214fb7e9c019c652fb2612c61358ba162a520b9d  rpath.patch
+"
