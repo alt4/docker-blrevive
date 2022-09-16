@@ -2,18 +2,15 @@
 
 A Docker implementation of the [Blacklight: Retribution Revive](https://gitlab.com/blrevive) server.
 
-**NOTE**: While it seems promising, performance wasn't thoroughly evaluated yet. Use at your own risks!
-
-## Quickstart
-
-```bash
-docker build -t docker-blrevive .
-docker run -v /srv/blacklightre/:/mnt/blacklightre:ro -p 7777:7777/udp docker-blrevive
-```
+**NOTE**: Requires a dual-core processor due to a BL:R warning that cannot be acknowledged on headless instances (yet). While it seems promising, performance wasn't thoroughly evaluated yet. Use at your own risks!
 
 ## Usage
 
 The game's files need to be mounted to `/mnt/blacklightre/`.
+
+```bash
+docker run -v /srv/blacklightre/:/mnt/blacklightre:ro -p 7777:7777/udp registry.gitlab.com/northamp/docker-blrevive:latest
+```
 
 ### Downloading the game
 
@@ -34,22 +31,6 @@ docker run -it -v /srv/blacklightre/gamefiles:/srv/blacklightre/gamefiles mcr.mi
 Applying BLRE's patch is going to be more finicky: current launcher releases do not support CLI patching properly.
 
 Your best bet is patching the game manually elsewhere and copying `FoxGame-win32-Shipping-Patched-Server.exe` to `/srv/blacklightre/Binaries/Win32` (without the proxy, see #1).
-
-### Building the image
-
-Clone the repository and run
-
-```bash
-docker build -t docker-blrevive .
-```
-
-### Starting a server
-
-Run:
-
-```bash
-docker run -v /srv/blacklightre/:/mnt/blacklightre:ro -p 7777:7777/udp docker-blrevive
-```
 
 ## Future plans
 
