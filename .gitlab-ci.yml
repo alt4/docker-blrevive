@@ -1,28 +1,50 @@
 stages:
-  - dockerize
+  - build
+  - push
   - release
 
-build-and-push-image:
-  stage: dockerize
+variables:
+  STORAGE_DRIVER: "vfs"
+  ARTIFACT_DIR: "./arts"
+  ARTIFACT_NAME: "blreserver-built-image.tar"
+
+build-image:
+  stage: build
   image:
-    name: gcr.io/kaniko-project/executor:debug
-    entrypoint: [""]
+    name: quay.io/buildah/stable:v1.27.0
   tags:
     - docker
   script:
-    - mkdir -p /kaniko/.docker
-    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
-    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
+    - buildah bud -f Dockerfile -t $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME .
+    - mkdir ${ARTIFACT_DIR}
+    - buildah push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME docker-archive:${ARTIFACT_DIR}/${ARTIFACT_NAME}:$CI_COMMIT_REF_NAME
+  artifacts:
+    name: "archive:${ARTIFACT_NAME}:${CI_JOB_ID}"
+    when: "on_success"
+    expire_in: "6h"
+    paths:
+      - ${ARTIFACT_DIR}/
 
-retag-latest:
+push:
+  stage: "push"
+  image:
+    name: quay.io/buildah/stable:v1.27.0
+  script:
+    - buildah pull docker-archive:${ARTIFACT_DIR}/${ARTIFACT_NAME}
+    - echo $CI_REGISTRY_PASSWORD | buildah login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+    - buildah push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
+  dependencies:
+    - build
+
+tag-latest:
   stage: release
   only:
     - /^.*-release$/
   image:
-    name: gcr.io/go-containerregistry/crane:debug
-    entrypoint: [""]
-  variables:
-    GIT_STRATEGY: none
+    name: quay.io/buildah/stable:v1.27.0
   script:
-    - crane auth login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - crane cp $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME $CI_REGISTRY_IMAGE:latest
+    - buildah pull docker-archive:${ARTIFACT_DIR}/${ARTIFACT_NAME}
+    - echo $CI_REGISTRY_PASSWORD | buildah login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+    - buildah push $CI_REGISTRY_IMAGE:latest
+  dependencies:
+    - build
