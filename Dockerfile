@@ -21,6 +21,9 @@ RUN apk add --no-cache gnutls tzdata ca-certificates sudo xvfb
 RUN --mount=from=build-wine,source=/builder/packages/main/x86,target=/builder/wine \
     echo "x86" > /etc/apk/arch && apk add --no-cache --allow-untrusted /builder/wine/blrevive-server-wine-[0-9]*-r*.apk
 
+# silence Xvfb xkbcomp warnings by working around the bug (present in libX11 1.7.2) fixed in libX11 1.8 by https://gitlab.freedesktop.org/xorg/lib/libx11/-/merge_requests/79
+RUN echo 'partial xkb_symbols "evdev" {};' > /usr/share/X11/xkb/symbols/inet
+
 RUN adduser -D blrevive && \
     echo 'blrevive ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/blrevive && \
     mkdir /mnt/blacklightre
