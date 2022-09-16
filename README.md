@@ -2,7 +2,7 @@
 
 A Docker implementation of the [Blacklight: Retribution Revive](https://gitlab.com/blrevive) server.
 
-**NOTE**: As of yet, the Wine setup is pretty much everything-and-the-kitchen-sink. Image weight will be made *much* lighter later down the line.
+**NOTE**: While it seems promising, performance wasn't thoroughly evaluated yet. Use at your own risks!
 
 ## Quickstart
 
@@ -50,3 +50,10 @@ Run:
 ```bash
 docker run -v /srv/blacklightre/:/mnt/blacklightre:ro -p 7777:7777/udp docker-blrevive
 ```
+
+## Future plans
+
+* An agent that manages game state (start, monitoring, crash handling, etc...)
+  * *Maybe* a "download game from steam and patch if not there" function in said agent, only if it doesn't bloat it too much
+* A (web?) API allowing priviledged actions such as restarts, gamemode changes, etc...
+  * An external Discord bot pluggeable to said API to allow gamemode changes votes
