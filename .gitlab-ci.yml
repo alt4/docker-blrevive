@@ -25,7 +25,7 @@ build-image:
     paths:
       - ${ARTIFACT_DIR}/
 
-push:
+push-image:
   stage: "push"
   image:
     name: quay.io/buildah/stable:v1.27.0
@@ -34,9 +34,9 @@ push:
     - echo $CI_REGISTRY_PASSWORD | buildah login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
     - buildah push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
   dependencies:
-    - build
+    - build-image
 
-tag-latest:
+tag-latest-image:
   stage: release
   only:
     - /^.*-release$/
@@ -47,4 +47,4 @@ tag-latest:
     - echo $CI_REGISTRY_PASSWORD | buildah login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
     - buildah push $CI_REGISTRY_IMAGE:latest
   dependencies:
-    - build
+    - build-image
