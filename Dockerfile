@@ -3,7 +3,7 @@
 FROM alpine:3.15.4 AS base
 
 FROM base AS build
-RUN echo "x86" > /etc/apk/arch && apk update && apk add alpine-sdk sudo
+RUN echo "x86" > /etc/apk/arch && apk update --ignore alpine-baselayout && apk add alpine-sdk sudo
 RUN adduser -Dh /builder builder && \
     adduser builder abuild && \
     echo 'builder ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/builder
