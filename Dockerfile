@@ -66,4 +66,4 @@ COPY --chown=blrevive:blrevive ./src/gamemanager/start.sh /srv/blacklightre/star
 WORKDIR /srv/blacklightre
 RUN chmod +x start.sh
 ENTRYPOINT ["sh", "start.sh"]
-CMD ["wine", "FoxGame-win32-Shipping-Patched.exe server HeloDeck?Game=FoxGame.FoxGameMP_TDM?NumBots=10?port=7777"]
+CMD ["wine", "FoxGame-win32-Shipping-Patched-Server.exe server HeloDeck?Game=FoxGame.FoxGameMP_TDM?NumBots=10?port=7777"]
