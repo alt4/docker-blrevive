@@ -34,6 +34,7 @@ RUN adduser -D blrevive && \
 USER blrevive
 
 ENV WINEPREFIX="/home/blrevive/.wine"
+
 RUN WINEDLLOVERRIDES="mscoree,mshtml=,winemenubuilder.exe" wineboot --init && \
     for x in \
         /home/blrevive/.wine/drive_c/"Program Files"/"Common Files"/System/*/* \
@@ -59,6 +60,8 @@ RUN WINEDLLOVERRIDES="mscoree,mshtml=,winemenubuilder.exe" wineboot --init && \
 VOLUME /mnt/blacklightre
 
 EXPOSE 7777/udp
+
+ENV WINEDEBUG=-d3d
 
 # Temporary
 COPY --chown=blrevive:blrevive ./src/gamemanager/start.sh /srv/blacklightre/start.sh
