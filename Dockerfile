@@ -34,6 +34,7 @@ RUN adduser -D blrevive && \
 USER blrevive
 
 ENV WINEPREFIX="/home/blrevive/.wine"
+
 RUN WINEDLLOVERRIDES="mscoree,mshtml=,winemenubuilder.exe" wineboot --init && \
     for x in \
         /home/blrevive/.wine/drive_c/"Program Files"/"Common Files"/System/*/* \
@@ -60,10 +61,12 @@ VOLUME /mnt/blacklightre
 
 EXPOSE 7777/udp
 
+ENV WINEDEBUG=-d3d
+
 # Temporary
 COPY --chown=blrevive:blrevive ./src/gamemanager/start.sh /srv/blacklightre/start.sh
 
 WORKDIR /srv/blacklightre
 RUN chmod +x start.sh
 ENTRYPOINT ["sh", "start.sh"]
-CMD ["wine", "FoxGame-win32-Shipping-Patched.exe server HeloDeck?Game=FoxGame.FoxGameMP_TDM?NumBots=10?port=7777"]
+CMD ["wine", "FoxGame-win32-Shipping-Patched-Server.exe server HeloDeck?Game=FoxGame.FoxGameMP_TDM?NumBots=10?port=7777"]
