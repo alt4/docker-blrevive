@@ -3,8 +3,8 @@
 """Launch script for the server API
 """
 
-from mars import app
-from mars.utils.gamehandler import BLREHandler
+from api import app
+from api.utils.gamehandler import BLREHandler
 
 import argparse
 import toml
@@ -19,13 +19,15 @@ def parse_env():
     config['debug'] = os.getenv('MARS_DEBUG')
     config['game'] = {}
     config['game']['exe'] = os.getenv('MARS_GAME_EXE')
+    # https://blrevive.gitlab.io/wiki/guides/hosting/game-server/parameters.html#game-settings
     config['game']['port'] = os.getenv('MARS_GAME_PORT')
-    config['game']['title'] = os.getenv('MARS_GAME_TITLE')
+    config['game']['map'] = os.getenv('MARS_GAME_MAP')
+    config['game']['servername'] = os.getenv('MARS_GAME_SERVERNAME')
     config['game']['playlist'] = os.getenv('MARS_GAME_PLAYLIST')
     config['game']['gamemode'] = os.getenv('MARS_GAME_GAMEMODE')
-    config['game']['map'] = os.getenv('MARS_GAME_MAP')
     config['game']['numbots'] = os.getenv('MARS_GAME_NUMBOTS')
     config['game']['maxplayers'] = os.getenv('MARS_GAME_MAXPLAYERS')
+    config['game']['timelimit'] = os.getenv('MARS_GAME_TIMELIMIT')
     config['api'] = {}
     config['api']['enabled'] = os.getenv('MARS_API_ENABLED')
     config['api']['listen_ip'] = os.getenv('MARS_API_LISTEN_IP')
@@ -44,12 +46,15 @@ if __name__ == '__main__':
     args = parser.parse_args()
     if not (args.configfile):
         raise ValueError('"-f" cannot be empty.')
-
+    
     if not args.docker:
         with open(args.configfile, 'r') as content_file:
             config = toml.loads(content_file.read())
     else:
         config = parse_env()
+
+    if not config['game']['exe']:
+        raise ValueError('Missing BL:RE executable')
 
     if config['debug']: # Only checks for existence, not content
         logging.basicConfig(level=logging.DEBUG)
@@ -59,16 +64,7 @@ if __name__ == '__main__':
         flask_debug = False
 
     if config['api']['enabled']:
-        app.game_manager = BLREHandler(
-            executable=config['game']['exe'],
-            port=config['game']['port'],
-            title=config['game']['title'],
-            playlist=config['game']['playlist'],
-            gamemode=config['game']['gamemode'],
-            map=config['game']['map'],
-            numbots=config['game']['numbots'],
-            maxplayers=config['game']['maxplayers']
-        )
+        app.game_manager = BLREHandler(config['game'])
 
         app.run(host=config['api']['listen_ip'],
             port=config['api']['listen_port'],
@@ -76,6 +72,4 @@ if __name__ == '__main__':
         )
     else:
         logger = logging.getLogger("MARStandalone")
-        #todo
-        # game = BLREHandler(config['game'])
-        # game.start()
+        game = BLREHandler(config['game'])

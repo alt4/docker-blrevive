@@ -6,8 +6,8 @@
 from flask import Flask 
 import flask.cli
 
-from .api.gamemanager import game_manager
-from .api.gamestate import game_state
+from .routes.gamemanager import game_manager
+from .routes.gamestate import game_state
 
 app = Flask(__name__)
 

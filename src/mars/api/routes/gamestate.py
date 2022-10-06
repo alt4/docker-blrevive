@@ -3,22 +3,15 @@
 """Game state polls
 """
 
-from flask import Blueprint, request
+from flask import Blueprint
+from ..services.game_state import whoami_service, status_service
 
 game_state = Blueprint('game_state', __name__)
 
 @game_state.route("/whoami", methods=['GET'])
 def whoami():
-    pass
+    return whoami_service()
 
 @game_state.route("/status", methods=['GET'])
 def status():
-    pass
-
-@game_state.route("/players", methods=['GET'])
-def players():
-    pass
-
-@game_state.route("/currentmap", methods=['GET'])
-def currentmap():
-    pass
+    return status_service()
