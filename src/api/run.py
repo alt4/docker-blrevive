@@ -4,10 +4,13 @@
 """
 
 from mars import app
+from mars.utils.gamehandler import BLREHandler
+
 import argparse
 import toml
 import os
 import logging
+
 
 def parse_env():
     """Parse system envvars to build the config dict"""
@@ -15,7 +18,8 @@ def parse_env():
     config = {}
     config['debug'] = os.getenv('MARS_DEBUG')
     config['game'] = {}
-    config['game']['path'] = os.getenv('MARS_GAME_PATH')
+    config['game']['exe'] = os.getenv('MARS_GAME_EXE')
+    config['game']['port'] = os.getenv('MARS_GAME_PORT')
     config['game']['title'] = os.getenv('MARS_GAME_TITLE')
     config['game']['playlist'] = os.getenv('MARS_GAME_PLAYLIST')
     config['game']['gamemode'] = os.getenv('MARS_GAME_GAMEMODE')
@@ -54,15 +58,24 @@ if __name__ == '__main__':
         logging.basicConfig(level=logging.INFO)
         flask_debug = False
 
-    logger = logging.getLogger(__name__)
-
     if config['api']['enabled']:
-        logger.info("Starting the web API on http://{}:{}".format(config['api']['listen_ip'], config['api']['listen_port']))
-        app.game_config = config['game']
-        app.run(host=config['api']['listen_ip'], port=config['api']['listen_port'], debug=flask_debug)
+        app.game_manager = BLREHandler(
+            executable=config['game']['exe'],
+            port=config['game']['port'],
+            title=config['game']['title'],
+            playlist=config['game']['playlist'],
+            gamemode=config['game']['gamemode'],
+            map=config['game']['map'],
+            numbots=config['game']['numbots'],
+            maxplayers=config['game']['maxplayers']
+        )
+
+        app.run(host=config['api']['listen_ip'],
+            port=config['api']['listen_port'],
+            debug=flask_debug
+        )
     else:
-        # Move it up top to import anyway?
-        from .mars.utils.gamehandler import BLREHandler
+        logger = logging.getLogger("MARStandalone")
         #todo
         # game = BLREHandler(config['game'])
         # game.start()

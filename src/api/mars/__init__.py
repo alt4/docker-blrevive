@@ -4,13 +4,14 @@
 """
 
 from flask import Flask 
+import flask.cli
 
 from .api.gamemanager import game_manager
 from .api.gamestate import game_state
 
-from .utils.gamehandler import BLREHandler
-
 app = Flask(__name__)
+
+flask.cli.show_server_banner = lambda *args: None
 
 app.register_blueprint(game_manager, url_prefix='/mars/api/admin')
 app.register_blueprint(game_state, url_prefix='/mars/api/state')
