@@ -13,4 +13,4 @@ def whoami_service():
     }, 200)
 
 def status_service():
-    return make_response(current_app.game_manager.get_state, 200)
+    return make_response(current_app.game_manager.get_state(), 200)

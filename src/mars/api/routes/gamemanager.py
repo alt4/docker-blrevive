@@ -4,11 +4,16 @@
 """
 
 from flask import Blueprint, request
-from ..services.game_manager import restart_service, stop_service, change_servername, \
+from ..services.game_manager import start_service, stop_service, restart_service, \
+    change_settings_service, change_servername_service, \
     change_playlist_service, change_map_service, change_gamemode_service, \
     change_numbots_service, change_maxplayers_service
 
 game_manager = Blueprint('game_manager', __name__)
+
+@game_manager.route("/start", methods=['GET'])
+def start():
+    return start_service()
 
 @game_manager.route("/restart", methods=['GET'])
 def restart():
@@ -18,12 +23,15 @@ def restart():
 def stop():
     return stop_service()
 
-# TODO: Add a bulk change
+@game_manager.route("/change_settings", methods=['POST'])
+def change_settings():
+    data = request.args
+    return change_settings_service(data)
 
 @game_manager.route("/change_servername", methods=['POST'])
 def change_servername():
     data = request.args
-    return change_servername(data)
+    return change_servername_service(data)
 
 @game_manager.route("/change_playlist", methods=['POST'])
 def change_playlist():
