@@ -32,29 +32,52 @@ RUN echo 'partial xkb_symbols "evdev" {};' > /usr/share/X11/xkb/symbols/inet
 # M.A.R.S preparation
 WORKDIR /srv/mars
 COPY ./src/mars/requirements-gunicorn.txt /srv/mars/requirements-gunicorn.txt
-COPY ./src/start.sh /srv/mars/start.sh
-RUN pip install -r requirements-gunicorn.txt && \
-  chmod +x start.sh
+RUN pip install -r requirements-gunicorn.txt
 COPY ./src/mars/ /srv/mars
+COPY ./src/start.sh /srv/mars/start.sh
 
 # Finalization
-RUN adduser -D blrevive && \
+RUN mkdir -p /mnt/blacklightre /srv/mars/logs /srv/mars/pid && \
     echo 'blrevive ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/blrevive && \
-    mkdir /mnt/blacklightre
+    adduser -D blrevive && \
+    chmod +x start.sh && \
+    chown blrevive:blrevive -R /srv/mars/logs /srv/mars/pid
+
 USER blrevive
 
 ENV WINEDEBUG=-d3d
 ENV WINEPREFIX="/home/blrevive/.wine"
-RUN WINEDLLOVERRIDES="mscoree,mshtml=,winemenubuilder.exe" wineboot --init
+RUN WINEDLLOVERRIDES="mscoree,mshtml=,winemenubuilder.exe" wineboot --init && \
+    for x in \
+        /home/blrevive/.wine/drive_c/"Program Files"/"Common Files"/System/*/* \
+        /home/blrevive/.wine/drive_c/windows/* \
+        /home/blrevive/.wine/drive_c/windows/system32/* \
+        /home/blrevive/.wine/drive_c/windows/system32/drivers/* \
+        /home/blrevive/.wine/drive_c/windows/system32/wbem/* \
+        /home/blrevive/.wine/drive_c/windows/system32/spool/drivers/x64/*/* \
+        /home/blrevive/.wine/drive_c/windows/system32/Speech/common/* \
+        /home/blrevive/.wine/drive_c/windows/winsxs/*/* \
+    ; do \
+        orig="/usr/lib/wine/i386-windows/$(basename "$x")"; \
+        if cmp -s "$orig" "$x"; then ln -sf "$orig" "$x"; fi; \
+    done && \
+    for x in \
+        /home/blrevive/.wine/drive_c/windows/globalization/sorting/*.nls \
+        /home/blrevive/.wine/drive_c/windows/system32/*.nls \
+    ; do \
+        orig="/usr/share/wine/nls/$(basename "$x")"; \
+        if cmp -s "$orig" "$x"; then ln -sf "$orig" "$x"; fi; \
+    done
 
 VOLUME /mnt/blacklightre
 
-ENV PATH="/opt/marsvenv/bin:$PATH"
+ENV PATH="/srv/mars/:$PATH"
 
 ENV MARS_API_LISTEN_IP=127.0.0.1
 ENV MARS_API_LISTEN_PORT=5000
+ENV MARS_GAME_EXE=/mnt/blacklightre/Binaries/Win32/FoxGame-win32-Shipping-Patched-Server.exe
 
 EXPOSE 7777/udp
 EXPOSE 5000/tcp
 
-CMD ["start.sh"]
+CMD ["./start.sh"]

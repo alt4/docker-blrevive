@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# from xvfbwrapper import Xvfb
+from xvfbwrapper import Xvfb
 import os
 import signal
 import pathlib
@@ -19,16 +19,20 @@ class BLREHandler():
             * Parsing the starting configuration
             * Making sure no other server is currently running on the same port
         """
-        # Xvfb preparation for what's to come - unused since BLRE seems fine without it (for now)
-        # self.vdisplay = Xvfb(width=1024, height=768, colordepth=16)
+        # Xvfb preparation for what's to come
+        self.vdisplay = Xvfb(width=1024, height=768, colordepth=16)
+        self.vdisplay.start()
 
         self.logger = logging.getLogger(__name__)
         self.logger.info("Mars is booting...")
         self.config = self.__parse_config(config)
         self.logger.debug("Parsed configuration, result: {}".format(self.config))
 
-        self.pidfilepath = pathlib.Path('/tmp/blrevive-{}.pid'.format(self.config['port']))
+        self.pidfilepath = pathlib.Path('/srv/mars/pid/blrevive-{}.pid'.format(self.config['port']))
         self.logger.debug("Will use PID file: {}".format(self.pidfilepath))
+
+        self.serverlogfilepath = pathlib.Path('/srv/mars/logs/blrevive-{}.log'.format(self.config['port']))
+        self.logger.debug("Will output server's stdout to: {}".format(self.pidfilepath))
 
         self.__check_for_conflicts()
 
@@ -38,9 +42,9 @@ class BLREHandler():
         # TODO? Check for port availability?
         command = self.__build_command()
 
+        self.serverlog = open(self.serverlogfilepath, 'w')
         self.logger.debug('Trying to spawn a new server with the following command: {}'.format(command))
-        # TODO: Handle stdout/err
-        self.process = subprocess.Popen(command, cwd=pathlib.Path(self.config['exe']).parent, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        self.process = subprocess.Popen(command, cwd=pathlib.Path(self.config['exe']).parent, shell=False, stdout=self.serverlog, stderr=subprocess.STDOUT)
 
         with open(self.pidfilepath, 'w') as pidfile:
             pidfile.write(str(self.process.pid))
@@ -78,6 +82,8 @@ class BLREHandler():
         try:
             self.process.terminate()
             self.logger.info("Sent SIGTERM to the server")
+            self.serverlog.close()
+            self.logger.debug("Closed the current server log file")
             self.process = None
             os.remove(self.pidfilepath)
         except AttributeError:
@@ -98,11 +104,19 @@ class BLREHandler():
                 pid = int(pidfile.read())
                 pidfile.close()
             self.logger.debug("Trying to terminate process with PID {}".format(pid))
-            os.kill(pid, signal.SIGTERM)
+            try:
+                os.kill(pid, signal.SIGTERM)
+            except ProcessLookupError:
+                self.logger.debug("Seems like the process was closed without cleaning its PID file (likely a crash)")
             self.logger.debug("Removing PID file")
             os.remove(self.pidfilepath)
         except FileNotFoundError:
             self.logger.debug("No PID file found, not terminating anything")
+
+        try:
+            self.logfile.close()
+        except AttributeError:
+            self.logger.debug("No log file handle to close, skipping")
 
     def __parse_config(self, config):
         """Fill user-provided config with default values when necessary
