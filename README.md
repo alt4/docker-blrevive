@@ -1,6 +1,10 @@
 # BLRevive Docker Server
 
+![M.A.R.S. API personified, sorta. These Wine builds take ages, man](/marsapi.png "M.A.R.S API")
+
 A Docker implementation of the [Blacklight: Retribution Revive](https://gitlab.com/blrevive) server.
+
+Comes with a REST API (named Mars) allowing control over the server's settings and status.
 
 **NOTE**: Requires a dual-core processor due to a BL:R warning that cannot be acknowledged on headless instances (yet). While it seems promising, performance wasn't thoroughly evaluated yet. Use at your own risks!
 
