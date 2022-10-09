@@ -60,6 +60,4 @@ atexit.register(application.game_manager.terminate_pid)
 application.register_blueprint(game_manager, url_prefix='/mars/api/admin')
 application.register_blueprint(game_state, url_prefix='/mars/api/state')
 
-@application.before_first_request
-def initial_start_server():
-    application.game_manager.start()
+application.game_manager.start()
