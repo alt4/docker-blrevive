@@ -3,7 +3,6 @@
 from xvfbwrapper import Xvfb
 import os
 import signal
-import pathlib
 import subprocess
 import logging
 import re
@@ -41,6 +40,9 @@ class BLREHandler():
         """Starts a new server process
         """
         # TODO? Check for port availability?
+        self.logger.debug('Committing staging launch options before starting the server')
+        self.server_options.commit_launch_options()
+
         command = ["wine", 
             self.server_options.server_executable,
             "server",
@@ -48,6 +50,7 @@ class BLREHandler():
         ]
 
         self.serverlog = open(self.server_options.log_file_path, 'w')
+
         self.logger.debug('Trying to spawn a new server with the following command: {}'.format(command))
         self.process = subprocess.Popen(command, cwd=self.server_options.server_executable_path.parent, shell=False, stdout=self.serverlog, stderr=subprocess.STDOUT)
 
@@ -79,6 +82,10 @@ class BLREHandler():
             self.logger.debug("No known process, cannot get the state")
             state['running'] = False
         finally:
+            if self.server_options.launch_options == self.server_options.staging_launch_options:
+                state['server_match_config'] = True
+            else:
+                state['server_match_config'] = False
             return state
 
     def stop(self):

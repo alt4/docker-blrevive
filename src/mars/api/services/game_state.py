@@ -13,3 +13,9 @@ def whoami_service():
 
 def status_service():
     return make_response(current_app.game_manager.get_state(), 200)
+
+def current_configuration_service():
+    return make_response(current_app.game_manager.server_options.launch_options.__dict__, 200)
+
+def staging_configuration_service():
+    return make_response(current_app.game_manager.server_options.staging_launch_options.__dict__, 200)

@@ -3,12 +3,12 @@
 """M.A.R.S. kickin' in
 """
 
-from flask import Flask 
-import flask.cli
+from flask import Flask
 
 from .routes.gamemanager import game_manager
 from .routes.gamestate import game_state
 from .routes.magicompatibility import magi_compatibility
+
 from api.utils.gamehandler import BLREHandler
 
 import os

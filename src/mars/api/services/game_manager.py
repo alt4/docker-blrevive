@@ -23,6 +23,19 @@ def restart_service():
     current_app.game_manager.restart()
     return make_response("Restarting", 200)
 
-def change_settings_service(data):
-    print(data)
+def change_settings_service(settings):
+    # TODO: Refactor... Possibly need to improve the function on LaunchOptions
+    settings_copy = settings.copy()
+    settings_copy.setdefault('map')
+    settings_copy.setdefault('servername')
+    settings_copy.setdefault('gamemode')
+    settings_copy.setdefault('playlist')
+    settings_copy.setdefault('numbots')
+    settings_copy.setdefault('maxplayers')
+    settings_copy.setdefault('timelimit')
+    settings_copy.setdefault('scp')
+    settings_copy.setdefault('restart')
+    current_app.game_manager.server_options.staging_launch_options.load_from_dict(settings_copy)
+    if settings_copy['restart']:
+        current_app.game_manager.restart()
     return make_response("OK", 200)

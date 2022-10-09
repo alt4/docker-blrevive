@@ -6,6 +6,7 @@ https://github.com/MajiKau/BLRE-Server-Info-Discord-Bot/blob/master/src/classes/
 
 from dataclasses import dataclass
 from pathlib import Path
+import copy
 
 @dataclass
 class ServerInfo:
@@ -18,6 +19,8 @@ class ServerInfo:
 
 @dataclass
 class LaunchOptions:
+    """Contains game-specific options
+    """
     map: str = 'HeloDeck'
     servername: str = 'MARS Managed Server'
     gamemode: str = ''
@@ -39,7 +42,7 @@ class LaunchOptions:
             map=self.map,
             port="?Port={}".format(self.port),
             servername="?Servername={}".format(self.servername),
-            playlist="?Playlist={}".format(self.Playlist) if self.Playlist else '',
+            playlist="?Playlist={}".format(self.Playlist) if self.playlist else '',
             gamemode="?Game={}".format(self.gamemode) if self.gamemode else '',
             numbots="?NumBots={}".format(self.numbots) if self.numbots != 0 else '',
             maxplayers="?MaxPlayers={}".format(self.maxplayers) if self.maxplayers != 16 else '',
@@ -51,7 +54,7 @@ class LaunchOptions:
         self.map = config['map'] or self.map
         self.servername = config['servername'] or self.servername
         self.gamemode = config['gamemode'] or self.gamemode
-        self.Playlist = config['playlist'] or self.playlist
+        self.playlist = config['playlist'] or self.playlist
         self.numbots = config['numbots'] or self.numbots
         self.maxplayers = config['maxplayers'] or self.maxplayers
         self.timelimit = config['timelimit'] or self.timelimit
@@ -60,7 +63,11 @@ class LaunchOptions:
 
 @dataclass
 class ServerOptions:
+    """Contains global server options such as where the game executable is located, which log/PID file will be used, etc...
+    Also contains the game's launch options in two forms: a "staging" form, and a 
+    """
     launch_options: LaunchOptions = LaunchOptions()
+    staging_launch_options: LaunchOptions = LaunchOptions()
     server_executable: str = "FoxGame-win32-Shipping-Patched-Server.exe"
     server_executable_path: Path = None
     pid_file_path: Path = None
@@ -73,9 +80,12 @@ class ServerOptions:
         if not server_executable_path.is_file():
             raise FileNotFoundError('Could not find BL:RE executable: {}'.format(server_executable_path))
 
-        self.launch_options = LaunchOptions(config['game'])
+        self.staging_launch_options = LaunchOptions(config['game'])
         self.server_executable=config['server']['exe'] or self.server_executable
         self.server_executable_path=server_executable_path
         self.pid_file_path=Path('/srv/mars/pid/blrevive-{}.pid'.format(config['server']['port'] or self.launch_options.port))
         self.log_file_path=Path('/srv/mars/logs/blrevive-{}.log'.format(config['server']['port'] or self.launch_options.port))
         self.rcon_password=config['api']['rcon_password'] or self.rcon_password
+
+    def commit_launch_options(self):
+        self.launch_options = copy.copy(self.staging_launch_options)
