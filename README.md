@@ -65,6 +65,156 @@ Parameters are listed on [BL:RE's wiki](https://blrevive.gitlab.io/wiki/guides/h
 
 Refer to [README_API.md](README_API.md)
 
+## Deployment
+
+Here's some sample deployment setups:
+
+### Docker-Compose
+
+```yaml
+version: '3'
+services:
+  blrevive:
+    image: registry.gitlab.com/northamp/docker-blrevive:latest
+    restart: always
+    environment:
+      - MARS_DEBUG="True"
+      - MARS_SERVER_EXE="FoxGame-win32-Shipping-Patched-Server.exe"
+      - MARS_GAME_SERVERNAME="And all I got was this lousy dock"
+      - MARS_GAME_PLAYLIST="KC"
+      - MARS_GAME_NUMBOTS="2"
+      - MARS_API_RCON_PASSWORD="MARSRcon"
+```
+
+### Kubernetes
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: blrevive-config
+  namespace: blrevive
+  labels:
+    app: blrevive
+data:
+  MARS_DEBUG: "True"
+  MARS_SERVER_EXE: "FoxGame-win32-Shipping-Patched-Server.exe"
+  MARS_GAME_SERVERNAME: "And all I got was this lousy kube"
+  MARS_GAME_PLAYLIST: "KC"
+  MARS_GAME_NUMBOTS: "2"
+  MARS_API_RCON_PASSWORD: "MARSRcon"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blrevive
+  namespace: blrevive
+  labels:
+    app: blrevive
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: blrevive
+  template:
+    metadata:
+      labels:
+        app: blrevive
+    spec:
+      containers:
+      - name: blrevive
+        image: registry.gitlab.com/northamp/docker-blrevive:latest
+        envFrom:
+          - configMapRef:
+              name: blrevive-config
+        # Wine debug messages
+        # env:
+        #   - name: WINEDEBUG
+        #     value: "warn+all"
+        ports:
+        - name: blrevive-game
+          containerPort: 7777
+          protocol: UDP
+        - name: blrevive-api
+          containerPort: 80
+          protocol: TCP
+        resources:
+          requests:
+            memory: "1024M"
+            cpu: "0.25"
+          limits:
+            memory: "2048M"
+            cpu: "2"
+        volumeMounts:
+          - mountPath: /mnt/blacklightre/
+            name: blrevive-gamefiles
+            readOnly: true
+      volumes:
+        - name: blrevive-gamefiles
+          persistentVolumeClaim:
+            claimName: blrevive-pv-claim
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: blrevive-game
+  namespace: blrevive
+  labels:
+    app: blrevive
+spec:
+  type: LoadBalancer
+  ports:
+  - name: blrevive-game
+    port: 7777
+    targetPort: blrevive-game
+    protocol: UDP
+  selector:
+    app: blrevive
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: blrevive-api
+  namespace: blrevive
+  labels:
+    app: blrevive
+spec:
+  type: LoadBalancer
+  ports:
+  - name: blrevive-api
+    port: 80
+    targetPort: blrevive-api
+    protocol: TCP
+  selector:
+    app: blrevive
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: blrevive-ingress
+  namespace: blrevive
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  rules:
+  - host: blrevive.example.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: blrevive-game-service
+            port:
+              number: 80
+        path: /
+        pathType: ImplementationSpecific
+  tls:
+  - hosts:
+    - blrevive.example.com
+    secretName: blrevive-example-com-tls
+```
+
 ## Credits/Acknowledgements
 
 ### Wine build & CI Build
