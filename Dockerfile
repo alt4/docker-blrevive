@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1.3
-
 FROM alpine:3.15.4 AS base
 
 FROM base AS build
@@ -17,7 +15,10 @@ COPY --chown=builder:builder ./src/wine/ /builder/src/main/wine/
 RUN ulimit -n 1024; cd /builder/src/main/wine && abuild -r
 
 FROM base
-RUN apk add --no-cache gnutls tzdata ca-certificates sudo xvfb
+
+RUN apk add --no-cache gnutls tzdata ca-certificates sudo xvfb python3 py3-pip
+
+# Wine build
 # Kaniko doesn't support RUN --mount yet... https://github.com/GoogleContainerTools/kaniko/issues/1568
 # RUN --mount=from=build-wine,source=/builder/packages/main/x86,target=/builder/wine \
 #     echo "x86" > /etc/apk/arch && apk add --no-cache --allow-untrusted /builder/wine/blrevive-server-wine-[0-9]*-r*.apk
@@ -28,13 +29,24 @@ RUN echo "x86" > /etc/apk/arch && apk add --no-cache --allow-untrusted /builder/
 # silence Xvfb xkbcomp warnings by working around the bug (present in libX11 1.7.2) fixed in libX11 1.8 by https://gitlab.freedesktop.org/xorg/lib/libx11/-/merge_requests/79
 RUN echo 'partial xkb_symbols "evdev" {};' > /usr/share/X11/xkb/symbols/inet
 
-RUN adduser -D blrevive && \
+# M.A.R.S preparation
+WORKDIR /srv/mars
+COPY ./src/mars/requirements-gunicorn.txt /srv/mars/requirements-gunicorn.txt
+RUN pip install -r requirements-gunicorn.txt
+COPY ./src/mars/ /srv/mars
+COPY ./src/start.sh /srv/mars/start.sh
+
+# Finalization
+RUN mkdir -p /mnt/blacklightre /srv/mars/logs /srv/mars/pid && \
     echo 'blrevive ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/blrevive && \
-    mkdir /mnt/blacklightre
+    adduser -D blrevive && \
+    chmod +x start.sh && \
+    chown blrevive:blrevive -R /srv/mars/logs /srv/mars/pid
+
 USER blrevive
 
+ENV WINEDEBUG=-d3d
 ENV WINEPREFIX="/home/blrevive/.wine"
-
 RUN WINEDLLOVERRIDES="mscoree,mshtml=,winemenubuilder.exe" wineboot --init && \
     for x in \
         /home/blrevive/.wine/drive_c/"Program Files"/"Common Files"/System/*/* \
@@ -59,14 +71,12 @@ RUN WINEDLLOVERRIDES="mscoree,mshtml=,winemenubuilder.exe" wineboot --init && \
 
 VOLUME /mnt/blacklightre
 
+ENV PATH="/srv/mars/:$PATH"
+
+ENV MARS_API_LISTEN_IP=0.0.0.0
+ENV MARS_API_LISTEN_PORT=5000
+
 EXPOSE 7777/udp
+EXPOSE 5000/tcp
 
-ENV WINEDEBUG=-d3d
-
-# Temporary
-COPY --chown=blrevive:blrevive ./src/gamemanager/start.sh /srv/blacklightre/start.sh
-
-WORKDIR /srv/blacklightre
-RUN chmod +x start.sh
-ENTRYPOINT ["sh", "start.sh"]
-CMD ["wine", "FoxGame-win32-Shipping-Patched-Server.exe server HeloDeck?Game=FoxGame.FoxGameMP_TDM?NumBots=10?port=7777"]
+CMD ["./start.sh"]
