@@ -8,6 +8,7 @@ import flask.cli
 
 from .routes.gamemanager import game_manager
 from .routes.gamestate import game_state
+from .routes.magicompatibility import magi_compatibility
 from api.utils.gamehandler import BLREHandler
 
 import os
@@ -48,12 +49,13 @@ else:
     flask_debug = False
 
 #flask.cli.show_server_banner = lambda *args: None
-application.game_manager = BLREHandler(config)
+application.game_manager = BLREHandler(config=config)
 
 # Comment this if ever necessary to run tests with unclean exits
 atexit.register(application.game_manager.terminate_pid)
 
-application.register_blueprint(game_manager, url_prefix='/mars/api/admin')
-application.register_blueprint(game_state, url_prefix='/mars/api/state')
+application.register_blueprint(game_manager, url_prefix='/api/v1/admin')
+application.register_blueprint(game_state, url_prefix='/api/v1/state')
+application.register_blueprint(magi_compatibility, url_prefix='/api')
 
 application.game_manager.start()

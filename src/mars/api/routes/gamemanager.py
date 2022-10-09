@@ -4,6 +4,8 @@
 """
 
 from flask import Blueprint, request
+
+from ..utils.authentication import auth
 from ..services.game_manager import start_service, stop_service, restart_service, \
     change_settings_service, change_servername_service, \
     change_playlist_service, change_map_service, change_gamemode_service, \
@@ -11,49 +13,61 @@ from ..services.game_manager import start_service, stop_service, restart_service
 
 game_manager = Blueprint('game_manager', __name__)
 
+# TODO? Find a cleaner way to add login than specifying it explicitely everytime
+
 @game_manager.route("/start", methods=['GET'])
+@auth.login_required
 def start():
     return start_service()
 
 @game_manager.route("/restart", methods=['GET'])
+@auth.login_required
 def restart():
     return restart_service()
 
 @game_manager.route("/stop", methods=['GET'])
+@auth.login_required
 def stop():
     return stop_service()
 
-@game_manager.route("/change_settings", methods=['POST'])
+@game_manager.route("/change_settings", methods=['GET', 'POST'])
+@auth.login_required
 def change_settings():
     data = request.args
     return change_settings_service(data)
 
-@game_manager.route("/change_servername", methods=['POST'])
+@game_manager.route("/change_servername", methods=['GET', 'POST'])
+@auth.login_required
 def change_servername():
     data = request.args
     return change_servername_service(data)
 
-@game_manager.route("/change_playlist", methods=['POST'])
+@game_manager.route("/change_playlist", methods=['GET', 'POST'])
+@auth.login_required
 def change_playlist():
     data = request.args
     return change_playlist_service(data)
 
-@game_manager.route("/change_map", methods=['POST'])
+@game_manager.route("/change_map", methods=['GET', 'POST'])
+@auth.login_required
 def change_map():
     data = request.args
     return change_map_service(data)
 
-@game_manager.route("/change_gamemode", methods=['POST'])
+@game_manager.route("/change_gamemode", methods=['GET', 'POST'])
+@auth.login_required
 def change_gamemode():
     data = request.args
     return change_gamemode_service(data)
 
-@game_manager.route("/change_numbots", methods=['POST'])
+@game_manager.route("/change_numbots", methods=['GET', 'POST'])
+@auth.login_required
 def change_numbots():
     data = request.args
     return change_numbots_service(data)
 
-@game_manager.route("/change_maxplayers", methods=['POST'])
+@game_manager.route("/change_maxplayers", methods=['GET', 'POST'])
+@auth.login_required
 def change_maxplayers():
     data = request.args
     return change_maxplayers_service(data)

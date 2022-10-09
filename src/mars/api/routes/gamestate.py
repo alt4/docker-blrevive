@@ -12,6 +12,6 @@ game_state = Blueprint('game_state', __name__)
 def whoami():
     return whoami_service()
 
-@game_state.route("/status", methods=['GET'])
+@game_state.route("/server", methods=['GET'])
 def status():
     return status_service()

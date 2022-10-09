@@ -23,23 +23,23 @@ def restart_service():
     current_app.game_manager.restart()
     return make_response("Restarting", 200)
 
-def change_settings_service():
+def change_settings_service(data):
     pass
 
-def change_servername_service():
+def change_servername_service(data):
     pass
 
-def change_playlist_service():
+def change_playlist_service(data):
     pass
 
-def change_map_service():
+def change_map_service(data):
     pass
 
-def change_gamemode_service():
+def change_gamemode_service(data):
     pass
 
-def change_numbots_service():
+def change_numbots_service(data):
     pass
 
-def change_maxplayers_service():
+def change_maxplayers_service(data):
     pass
