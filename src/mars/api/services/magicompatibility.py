@@ -10,7 +10,7 @@ def server_service():
         "PlayerCount": 0,
         "Map": None,
         "PlayerList": [],
-        "ServerName": current_app.game_manager.ServerOptions.LaunchOptions.Servername,
+        "ServerName": current_app.game_manager.server_options.launch_options.servername,
         "GameMode": None
     }, 200)
 

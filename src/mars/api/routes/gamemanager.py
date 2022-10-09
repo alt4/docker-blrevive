@@ -7,9 +7,7 @@ from flask import Blueprint, request
 
 from ..utils.authentication import auth
 from ..services.game_manager import start_service, stop_service, restart_service, \
-    change_settings_service, change_servername_service, \
-    change_playlist_service, change_map_service, change_gamemode_service, \
-    change_numbots_service, change_maxplayers_service
+    change_settings_service
 
 game_manager = Blueprint('game_manager', __name__)
 
@@ -35,39 +33,3 @@ def stop():
 def change_settings():
     data = request.args
     return change_settings_service(data)
-
-@game_manager.route("/change_servername", methods=['GET', 'POST'])
-@auth.login_required
-def change_servername():
-    data = request.args
-    return change_servername_service(data)
-
-@game_manager.route("/change_playlist", methods=['GET', 'POST'])
-@auth.login_required
-def change_playlist():
-    data = request.args
-    return change_playlist_service(data)
-
-@game_manager.route("/change_map", methods=['GET', 'POST'])
-@auth.login_required
-def change_map():
-    data = request.args
-    return change_map_service(data)
-
-@game_manager.route("/change_gamemode", methods=['GET', 'POST'])
-@auth.login_required
-def change_gamemode():
-    data = request.args
-    return change_gamemode_service(data)
-
-@game_manager.route("/change_numbots", methods=['GET', 'POST'])
-@auth.login_required
-def change_numbots():
-    data = request.args
-    return change_numbots_service(data)
-
-@game_manager.route("/change_maxplayers", methods=['GET', 'POST'])
-@auth.login_required
-def change_maxplayers():
-    data = request.args
-    return change_maxplayers_service(data)

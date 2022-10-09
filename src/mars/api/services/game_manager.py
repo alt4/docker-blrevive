@@ -24,22 +24,5 @@ def restart_service():
     return make_response("Restarting", 200)
 
 def change_settings_service(data):
-    pass
-
-def change_servername_service(data):
-    pass
-
-def change_playlist_service(data):
-    pass
-
-def change_map_service(data):
-    pass
-
-def change_gamemode_service(data):
-    pass
-
-def change_numbots_service(data):
-    pass
-
-def change_maxplayers_service(data):
-    pass
+    print(data)
+    return make_response("OK", 200)

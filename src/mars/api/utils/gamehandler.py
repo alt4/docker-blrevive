@@ -30,10 +30,10 @@ class BLREHandler():
         
         self.logger.debug("Configuration: {}".format(config))
 
-        self.ServerOptions = ServerOptions()
-        self.ServerOptions.parse_configuration(config)
-        self.logger.debug("Will write server's PID to: {}".format(self.ServerOptions.PidFilePath))
-        self.logger.debug("Will output server's stdout to: {}".format(self.ServerOptions.LogFilePath))
+        self.server_options = ServerOptions()
+        self.server_options.parse_configuration(config)
+        self.logger.debug("Will write server's PID to: {}".format(self.server_options.pid_file_path))
+        self.logger.debug("Will output server's stdout to: {}".format(self.server_options.log_file_path))
 
         self.__check_for_conflicts()
 
@@ -42,16 +42,16 @@ class BLREHandler():
         """
         # TODO? Check for port availability?
         command = ["wine", 
-            self.ServerOptions.ServerExecutable,
+            self.server_options.server_executable,
             "server",
-            self.ServerOptions.LaunchOptions.prepare_arguments()
+            self.server_options.launch_options.prepare_arguments()
         ]
 
-        self.serverlog = open(self.ServerOptions.LogFilePath, 'w')
+        self.serverlog = open(self.server_options.log_file_path, 'w')
         self.logger.debug('Trying to spawn a new server with the following command: {}'.format(command))
-        self.process = subprocess.Popen(command, cwd=self.ServerOptions.ServerExecutablePath.parent, shell=False, stdout=self.serverlog, stderr=subprocess.STDOUT)
+        self.process = subprocess.Popen(command, cwd=self.server_options.server_executable_path.parent, shell=False, stdout=self.serverlog, stderr=subprocess.STDOUT)
 
-        with open(self.ServerOptions.PidFilePath, 'w') as pidfile:
+        with open(self.server_options.pid_file_path, 'w') as pidfile:
             pidfile.write(str(self.process.pid))
             pidfile.close()
 
@@ -90,7 +90,7 @@ class BLREHandler():
             self.serverlog.close()
             self.logger.debug("Closed the current server log file")
             self.process = None
-            os.remove(self.ServerOptions.PidFilePath)
+            os.remove(self.server_options.pid_file_path)
         except AttributeError:
             self.logger.warn("Called the stop function but server isn't started, or process doesn't exist")
 
@@ -102,10 +102,10 @@ class BLREHandler():
 
     def terminate_pid(self):
         """Verify if a process with a PID fitting the server configuration (same port) exists, and kill it
-        Can be used even when the handler isn't managing the process
+        Can be used even when the handler isn't managing the process, such as atexit calls
         """
         try:
-            with open(self.ServerOptions.PidFilePath, 'r') as pidfile:
+            with open(self.server_options.pid_file_path, 'r') as pidfile:
                 pid = int(pidfile.read())
                 pidfile.close()
             self.logger.debug("Trying to terminate process with PID {}".format(pid))
@@ -114,26 +114,26 @@ class BLREHandler():
             except ProcessLookupError:
                 self.logger.debug("Seems like the process was closed without cleaning its PID file (likely a crash)")
             self.logger.debug("Removing PID file")
-            os.remove(self.ServerOptions.PidFilePath)
+            os.remove(self.server_options.pid_file_path)
         except FileNotFoundError:
             self.logger.debug("No PID file found, not terminating anything")
 
         try:
-            self.logfile.close()
+            self.serverlog.close()
         except AttributeError:
             self.logger.debug("No log file handle to close, skipping")
 
     def __ensure_alive_pid(self):
         """Checks if a process matching a BL:RE server exists at specified PID, returns True if that is the case
         """
-        with open(self.ServerOptions.PidFilePath, 'r') as pidfile:
+        with open(self.server_options.pid_file_path, 'r') as pidfile:
             pid = int(pidfile.read())
             pidfile.close()
 
         self.logger.debug("Process in PID file's name: {}".format(pid))
         processes = subprocess.Popen(["ps"], stdout=subprocess.PIPE, shell=True).communicate()[0].decode().splitlines()
-        self.logger.debug("Going to try and match processes with the following regex: '{}'".format("{}.*server.*Port={}".format(pid, self.ServerOptions.LaunchOptions.Port)))
-        regex_pid = re.compile("{}.*server.*Port={}".format(pid, self.ServerOptions.LaunchOptions.Port))
+        self.logger.debug("Going to try and match processes with the following regex: '{}'".format("{}.*server.*Port={}".format(pid, self.server_options.launch_options.Port)))
+        regex_pid = re.compile("{}.*server.*Port={}".format(pid, self.server_options.launch_options.Port))
         confirmed_processes = list(filter(regex_pid.search, processes))
         if confirmed_processes:
             self.logger.debug("Found the following processes that match what we're looking for (there should only be one or something is very wrong): {}".format(confirmed_processes))
@@ -145,8 +145,8 @@ class BLREHandler():
     def __check_for_conflicts(self):
         """Minor checks to increase probabilities BL:RE won't crash on startup
         """
-        pidfiles = [filename for filename in os.listdir(self.ServerOptions.PidFilePath.parent) if filename.startswith("blrevive-")]
-        if self.ServerOptions.PidFilePath.name in pidfiles:
+        pidfiles = [filename for filename in os.listdir(self.server_options.pid_file_path.parent) if filename.startswith("blrevive-")]
+        if self.server_options.pid_file_path.name in pidfiles:
             if self.__ensure_alive_pid():
                 raise RuntimeError("There already is a BL:RE server running that was not properly cleaned up")
             else:

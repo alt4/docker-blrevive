@@ -9,24 +9,24 @@ from pathlib import Path
 
 @dataclass
 class ServerInfo:
-    PlayerCount: int = 0
-    Map: str = ''
-    PlayerList: 'list[str]' = None
-    ServerName: str = ''
-    GameMode: str = ''
+    playercount: int = 0
+    map: str = ''
+    playerlist: 'list[str]' = None
+    servername: str = ''
+    gamemode: str = ''
 
 
 @dataclass
 class LaunchOptions:
-    Map: str = 'HeloDeck'
-    Servername: str = 'MARS Managed Server'
-    Gamemode: str = ''
-    Port: int = 7777
-    NumBots: int = 0 # Changed from Magi's to fit servers own denomination
-    MaxPlayers: int = 16
-    Playlist: str = '' # Also changed so it doesn't default to a playlist, overriding simple map/gamemode choices
-    SCP: int = 0
-    TimeLimit: int = None
+    map: str = 'HeloDeck'
+    servername: str = 'MARS Managed Server'
+    gamemode: str = ''
+    port: int = 7777
+    numbots: int = 0 # Changed from Magi's to fit servers own denomination
+    maxplayers: int = 16
+    playlist: str = '' # Also changed so it doesn't default to a playlist, overriding simple map/gamemode choices
+    scp: int = 0
+    timelimit: int = None
 
     def __init__(self, config: dict = {}):
         super().__init__()
@@ -35,46 +35,47 @@ class LaunchOptions:
 
     def prepare_arguments(self):
         # Fasten your seatbelts
-        return "{map}{port}{servername}{playlist}{gamemode}{numbots}{maxplayers}{timelimit}".format(
-            map=self.Map,
-            port="?Port={}".format(self.Port),
-            servername="?ServerName={}".format(self.Servername),
+        return "{map}{port}{servername}{playlist}{gamemode}{numbots}{maxplayers}{timelimit}{scp}".format(
+            map=self.map,
+            port="?Port={}".format(self.port),
+            servername="?Servername={}".format(self.servername),
             playlist="?Playlist={}".format(self.Playlist) if self.Playlist else '',
-            gamemode="?Game={}".format(self.Gamemode) if self.Gamemode else '',
-            numbots="?NumBots={}".format(self.NumBots) if self.NumBots != 0 else '',
-            maxplayers="?MaxPlayers={}".format(self.MaxPlayers) if self.MaxPlayers != 16 else '',
-            timelimit="?TimeLimit={}".format(self.TimeLimit) if self.TimeLimit else ''
+            gamemode="?Game={}".format(self.gamemode) if self.gamemode else '',
+            numbots="?NumBots={}".format(self.numbots) if self.numbots != 0 else '',
+            maxplayers="?MaxPlayers={}".format(self.maxplayers) if self.maxplayers != 16 else '',
+            timelimit="?TimeLimit={}".format(self.timelimit) if self.timelimit else '',
+            scp="?SCP={}".format(self.scp) if self.scp != 0 else ''
         )
 
     def load_from_dict(self, config: dict):
-        self.Map = config['map'] or self.Map
-        self.Servername = config['servername'] or self.Servername
-        self.Gamemode = config['gamemode'] or self.Gamemode
-        self.Playlist = config['playlist'] or self.Playlist
-        self.NumBots = config['numbots'] or self.NumBots
-        self.MaxPlayers = config['maxplayers'] or self.MaxPlayers
-        self.TimeLimit = config['timelimit'] or self.TimeLimit
-        self.SCP = config['scp'] or self.SCP
+        self.map = config['map'] or self.map
+        self.servername = config['servername'] or self.servername
+        self.gamemode = config['gamemode'] or self.gamemode
+        self.Playlist = config['playlist'] or self.playlist
+        self.numbots = config['numbots'] or self.numbots
+        self.maxplayers = config['maxplayers'] or self.maxplayers
+        self.timelimit = config['timelimit'] or self.timelimit
+        self.scp = config['scp'] or self.scp
 
 
 @dataclass
 class ServerOptions:
-    LaunchOptions: LaunchOptions = LaunchOptions()
-    ServerExecutable: str = "FoxGame-win32-Shipping-Patched-Server.exe"
-    ServerExecutablePath: Path = None
-    PidFilePath: Path = None
-    LogFilePath: Path = None
-    AutoRestartInLobby: bool = False #TODO
-    RCONPassword: str = "MARSAdmin"
+    launch_options: LaunchOptions = LaunchOptions()
+    server_executable: str = "FoxGame-win32-Shipping-Patched-Server.exe"
+    server_executable_path: Path = None
+    pid_file_path: Path = None
+    log_file_path: Path = None
+    auto_restart_in_lobby: bool = False #TODO
+    rcon_password: str = "MARSAdmin"
 
     def parse_configuration(self, config: dict):
-        ServerExecutablePath = Path("/mnt/blacklightre/Binaries/Win32", config['server']['exe'] or self.ServerExecutable)
-        if not ServerExecutablePath.is_file():
-            raise FileNotFoundError('Could not find BL:RE executable: {}'.format(ServerExecutablePath))
+        server_executable_path = Path("/mnt/blacklightre/Binaries/Win32", config['server']['exe'] or self.server_executable)
+        if not server_executable_path.is_file():
+            raise FileNotFoundError('Could not find BL:RE executable: {}'.format(server_executable_path))
 
-        self.LaunchOptions = LaunchOptions(config['game'])
-        self.ServerExecutable=config['server']['exe'] or self.ServerExecutable
-        self.ServerExecutablePath=ServerExecutablePath
-        self.PidFilePath=Path('/srv/mars/pid/blrevive-{}.pid'.format(config['server']['port'] or self.LaunchOptions.Port))
-        self.LogFilePath=Path('/srv/mars/logs/blrevive-{}.log'.format(config['server']['port'] or self.LaunchOptions.Port))
-        self.RCONPassword=config['api']['rcon_password'] or self.RCONPassword
+        self.launch_options = LaunchOptions(config['game'])
+        self.server_executable=config['server']['exe'] or self.server_executable
+        self.server_executable_path=server_executable_path
+        self.pid_file_path=Path('/srv/mars/pid/blrevive-{}.pid'.format(config['server']['port'] or self.launch_options.port))
+        self.log_file_path=Path('/srv/mars/logs/blrevive-{}.log'.format(config['server']['port'] or self.launch_options.port))
+        self.rcon_password=config['api']['rcon_password'] or self.rcon_password
