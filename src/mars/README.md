@@ -1,10 +1,10 @@
 # M.A.R.S A.P.I.
 
-Some sort of RCON, before we get an "official" master server.
+Some sort of RCON, until we get an "official" master server.
 
 Tested on Werkzeug and Gunicorn.
 
-# Quickstart
+## Quickstart
 
 Either run it with the launcher script as such:
 

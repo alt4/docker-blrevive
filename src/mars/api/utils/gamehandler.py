@@ -8,6 +8,8 @@ import subprocess
 import logging
 import re
 
+from .classes.server_structs import ServerOptions
+
 """Game-handling toolbox
 """
 
@@ -25,14 +27,13 @@ class BLREHandler():
 
         self.logger = logging.getLogger(__name__)
         self.logger.info("Mars is booting...")
-        self.config = self.__parse_config(config)
-        self.logger.debug("Parsed configuration, result: {}".format(self.config))
+        
+        self.logger.debug("Configuration: {}".format(config))
 
-        self.pidfilepath = pathlib.Path('/srv/mars/pid/blrevive-{}.pid'.format(self.config['port']))
-        self.logger.debug("Will use PID file: {}".format(self.pidfilepath))
-
-        self.serverlogfilepath = pathlib.Path('/srv/mars/logs/blrevive-{}.log'.format(self.config['port']))
-        self.logger.debug("Will output server's stdout to: {}".format(self.pidfilepath))
+        self.ServerOptions = ServerOptions()
+        self.ServerOptions.parse_configuration(config)
+        self.logger.debug("Will write server's PID to: {}".format(self.ServerOptions.PidFilePath))
+        self.logger.debug("Will output server's stdout to: {}".format(self.ServerOptions.LogFilePath))
 
         self.__check_for_conflicts()
 
@@ -40,13 +41,17 @@ class BLREHandler():
         """Starts a new server process
         """
         # TODO? Check for port availability?
-        command = self.__build_command()
+        command = ["wine", 
+            self.ServerOptions.ServerExecutable,
+            "server",
+            self.ServerOptions.LaunchOptions.prepare_arguments()
+        ]
 
-        self.serverlog = open(self.serverlogfilepath, 'w')
+        self.serverlog = open(self.ServerOptions.LogFilePath, 'w')
         self.logger.debug('Trying to spawn a new server with the following command: {}'.format(command))
-        self.process = subprocess.Popen(command, cwd=pathlib.Path(self.config['exe']).parent, shell=False, stdout=self.serverlog, stderr=subprocess.STDOUT)
+        self.process = subprocess.Popen(command, cwd=self.ServerOptions.ServerExecutablePath.parent, shell=False, stdout=self.serverlog, stderr=subprocess.STDOUT)
 
-        with open(self.pidfilepath, 'w') as pidfile:
+        with open(self.ServerOptions.PidFilePath, 'w') as pidfile:
             pidfile.write(str(self.process.pid))
             pidfile.close()
 
@@ -85,7 +90,7 @@ class BLREHandler():
             self.serverlog.close()
             self.logger.debug("Closed the current server log file")
             self.process = None
-            os.remove(self.pidfilepath)
+            os.remove(self.ServerOptions.PidFilePath)
         except AttributeError:
             self.logger.warn("Called the stop function but server isn't started, or process doesn't exist")
 
@@ -100,7 +105,7 @@ class BLREHandler():
         Can be used even when the handler isn't managing the process
         """
         try:
-            with open(self.pidfilepath, 'r') as pidfile:
+            with open(self.ServerOptions.PidFilePath, 'r') as pidfile:
                 pid = int(pidfile.read())
                 pidfile.close()
             self.logger.debug("Trying to terminate process with PID {}".format(pid))
@@ -109,7 +114,7 @@ class BLREHandler():
             except ProcessLookupError:
                 self.logger.debug("Seems like the process was closed without cleaning its PID file (likely a crash)")
             self.logger.debug("Removing PID file")
-            os.remove(self.pidfilepath)
+            os.remove(self.ServerOptions.PidFilePath)
         except FileNotFoundError:
             self.logger.debug("No PID file found, not terminating anything")
 
@@ -118,26 +123,17 @@ class BLREHandler():
         except AttributeError:
             self.logger.debug("No log file handle to close, skipping")
 
-    def __parse_config(self, config):
-        """Fill user-provided config with default values when necessary
-        """
-        if not config['port']:
-            config['port'] = "7777"
-        if not config['servername']:
-            config['servername'] = "MARS Managed BLRE Server"
-        return config
-
     def __ensure_alive_pid(self):
         """Checks if a process matching a BL:RE server exists at specified PID, returns True if that is the case
         """
-        with open(self.pidfilepath, 'r') as pidfile:
+        with open(self.ServerOptions.PidFilePath, 'r') as pidfile:
             pid = int(pidfile.read())
             pidfile.close()
 
         self.logger.debug("Process in PID file's name: {}".format(pid))
         processes = subprocess.Popen(["ps"], stdout=subprocess.PIPE, shell=True).communicate()[0].decode().splitlines()
-        self.logger.debug("Going to try and match processes with the following regex: '{}'".format("{}.*server.*Port={}".format(pid, self.config['port'])))
-        regex_pid = re.compile("{}.*server.*Port={}".format(pid, self.config['port']))
+        self.logger.debug("Going to try and match processes with the following regex: '{}'".format("{}.*server.*Port={}".format(pid, self.ServerOptions.LaunchOptions.Port)))
+        regex_pid = re.compile("{}.*server.*Port={}".format(pid, self.ServerOptions.LaunchOptions.Port))
         confirmed_processes = list(filter(regex_pid.search, processes))
         if confirmed_processes:
             self.logger.debug("Found the following processes that match what we're looking for (there should only be one or something is very wrong): {}".format(confirmed_processes))
@@ -149,8 +145,8 @@ class BLREHandler():
     def __check_for_conflicts(self):
         """Minor checks to increase probabilities BL:RE won't crash on startup
         """
-        pidfiles = [filename for filename in os.listdir(self.pidfilepath.parent) if filename.startswith("blrevive-")]
-        if self.pidfilepath.name in pidfiles:
+        pidfiles = [filename for filename in os.listdir(self.ServerOptions.PidFilePath.parent) if filename.startswith("blrevive-")]
+        if self.ServerOptions.PidFilePath.name in pidfiles:
             if self.__ensure_alive_pid():
                 raise RuntimeError("There already is a BL:RE server running that was not properly cleaned up")
             else:
@@ -159,34 +155,3 @@ class BLREHandler():
             self.logger.debug("Seems like other BL:RE servers are currently running due to these files existing: {}".format(pidfiles))
         else:
             self.logger.debug("No other PID files known")
-
-    def __build_command(self):
-        """Prepare a wine command that'll be called as a new process
-        """
-        self.logger.debug("Preparing a command for the following args: executable={} map={} port={} servername={} playlist={} gamemode={} numbots={} maxplayers={} timelimit={}".format(
-            self.config['exe'],
-            self.config['port'],
-            self.config['map'],
-            self.config['servername'],
-            self.config['playlist'],
-            self.config['gamemode'],
-            self.config['numbots'],
-            self.config['maxplayers'],
-            self.config['timelimit'],
-        ))
-
-        return ["wine", 
-            pathlib.Path(self.config['exe']).name,
-            "server",
-            # Fasten your seatbelts
-            "{map}{port}{servername}{playlist}{gamemode}{numbots}{maxplayers}{timelimit}".format(
-                map=self.config['map'] if self.config['map'] else "HeloDeck",
-                port="?Port={}".format(self.config['port']) if self.config['port'] else '',
-                servername="?ServerName={}".format(self.config['servername']) if self.config['servername'] else '',
-                playlist="?Playlist={}".format(self.config['playlist']) if self.config['playlist'] else '',
-                gamemode="?Game={}".format(self.config['gamemode']) if self.config['gamemode'] else '',
-                numbots="?NumBots={}".format(self.config['numbots']) if self.config['numbots'] else '',
-                maxplayers="?MaxPlayers={}".format(self.config['maxplayers']) if self.config['maxplayers'] else '',
-                timelimit="?TimeLimit={}".format(self.config['timelimit']) if self.config['timelimit'] else ''
-            )
-        ]

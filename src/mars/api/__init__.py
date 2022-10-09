@@ -21,10 +21,10 @@ def parse_env():
 
     config = {}
     config['debug'] = os.getenv('MARS_DEBUG')
+    config['server'] = {}
+    config['server']['exe'] = os.getenv('MARS_SERVER_EXE')
+    config['server']['port'] = os.getenv('MARS_SERVER_LISTEN_PORT')
     config['game'] = {}
-    config['game']['exe'] = os.getenv('MARS_GAME_EXE')
-    # https://blrevive.gitlab.io/wiki/guides/hosting/game-server/parameters.html#game-settings
-    config['game']['port'] = os.getenv('MARS_GAME_PORT')
     config['game']['map'] = os.getenv('MARS_GAME_MAP')
     config['game']['servername'] = os.getenv('MARS_GAME_SERVERNAME')
     config['game']['playlist'] = os.getenv('MARS_GAME_PLAYLIST')
@@ -32,17 +32,13 @@ def parse_env():
     config['game']['numbots'] = os.getenv('MARS_GAME_NUMBOTS')
     config['game']['maxplayers'] = os.getenv('MARS_GAME_MAXPLAYERS')
     config['game']['timelimit'] = os.getenv('MARS_GAME_TIMELIMIT')
+    config['game']['scp'] = os.getenv('MARS_GAME_SCP')
     config['api'] = {}
-    config['api']['listen_ip'] = os.getenv('MARS_API_LISTEN_IP')
-    config['api']['listen_port'] = os.getenv('MARS_API_LISTEN_PORT')
     config['api']['rcon_password'] = os.getenv('MARS_API_RCON_PASSWORD')
 
     return config
 
 config = parse_env()
-
-if not config['game']['exe']:
-    raise ValueError('Missing BL:RE executable')
 
 if config['debug']: # Only checks for existence, not content, beware
     logging.basicConfig(level=logging.DEBUG)
@@ -52,7 +48,7 @@ else:
     flask_debug = False
 
 #flask.cli.show_server_banner = lambda *args: None
-application.game_manager = BLREHandler(config=config['game'])
+application.game_manager = BLREHandler(config)
 
 # Comment this if ever necessary to run tests with unclean exits
 atexit.register(application.game_manager.terminate_pid)

@@ -73,9 +73,8 @@ VOLUME /mnt/blacklightre
 
 ENV PATH="/srv/mars/:$PATH"
 
-ENV MARS_API_LISTEN_IP=127.0.0.1
+ENV MARS_API_LISTEN_IP=0.0.0.0
 ENV MARS_API_LISTEN_PORT=5000
-ENV MARS_GAME_EXE=/mnt/blacklightre/Binaries/Win32/FoxGame-win32-Shipping-Patched-Server.exe
 
 EXPOSE 7777/udp
 EXPOSE 5000/tcp

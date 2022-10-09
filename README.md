@@ -10,10 +10,10 @@ Comes with a REST API (named Mars) allowing control over the server's settings a
 
 ## Usage
 
-The game's files need to be mounted to `/mnt/blacklightre/`.
+The game's files need to be mounted to `/mnt/blacklightre/`. Rest of the `README` will assume they're located on the host's `/srv/blacklightre`.
 
 ```bash
-docker run -v /srv/blacklightre/:/mnt/blacklightre:ro -p 7777:7777/udp registry.gitlab.com/northamp/docker-blrevive:latest
+docker run --rm -v /srv/blacklightre/:/mnt/blacklightre --env MARS_GAME_NUMBOTS=2 -p 5000:5000 -p 7777:7777/udp registry.gitlab.com/northamp/docker-blrevive:latest
 ```
 
 ### Downloading the game
@@ -32,23 +32,47 @@ docker run -it -v /srv/blacklightre/:/mnt/blacklightre/ mcr.microsoft.com/dotnet
   && mv depots/209871/2520205/ /mnt/blacklightre/"
 ```
 
-Applying BLRE's patch is going to be more finicky: current launcher releases do not support CLI patching properly.
+Applying BL:RE's patch is going to be more finicky: current launcher releases do not support CLI patching properly.
 
 Your best bet is patching the game manually elsewhere and copying the binaries to `/srv/blacklightre/Binaries/Win32`.
 
-### Different parameters
+### Server settings
 
-Server settings can be overriden in this manner (temporary, will probably move to environment variables later):
+Startup server settings can be overriden using the following environment variables:
 
-```bash
-docker run -v /srv/blacklightre/:/mnt/blacklightre:ro -p 7777:7777/udp registry.gitlab.com/northamp/docker-blrevive:latest wine FoxGame-win32-Shipping-Patched-Server.exe server Metro?Game=FoxGame.FoxGameMP_KC?NumBots=15?port=7777
-```
+| Name                      | Description                                                                                                      | Default                                     |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| `MARS_DEBUG`              | Set to any value to enable verbose logging                                                                       | ``                                          |
+| `MARS_SERVER_EXE`         | Server executable name mounted to the container, should be located in `/srv/blacklightre/Binaries/Win32/<exe>`   | `FoxGame-win32-Shipping-Patched-Server.exe` |
+| `MARS_SERVER_LISTEN_PORT` | Game UDP listen port. Changing not recommended, consider using a different port binding on the container instead | `7777`                                      |
+| `MARS_GAME_SERVERNAME`    | Server name                                                                                                      | `MARS Managed BLRE Server`                  |
+| `MARS_GAME_MAP`           | Map, overriden by playlist. Check the wiki for more informations                                                 | `HeloDeck`                                  |
+| `MARS_GAME_GAMEMODE`      | Gamemode, overriden by playlist. Check the wiki for more informations                                            | ``                                          |
+| `MARS_GAME_PLAYLIST`      | Server playlist                                                                                                  | ``                                          |
+| `MARS_GAME_NUMBOTS`       | Number of bots                                                                                                   | ``                                          |
+| `MARS_GAME_MAXPLAYERS`    | Maximum amount of players allowed                                                                                | ``                                          |
+| `MARS_GAME_TIMELIMIT`     | Time limit for each rounds                                                                                       | ``                                          |
+| `MARS_GAME_SCP`           | Amount of SCP players start with                                                                                 | ``                                          |
+| `MARS_API_LISTEN_IP`      | "Disable" the API if necessary by setting to `127.0.0.1`                                                         | `0.0.0.0`                                   |
+| `MARS_API_LISTEN_PORT`    | API listen port. Changing not recommended, consider using a different port binding on the container instead      | `5000`                                      |
+| `MARS_API_RCON_PASSWORD`  | Password allowing privileged actions such as stopping the server                                                 | ``                                          |
+
+Any `MARS_GAME_*` setting can be changed by the API during runtime. Env vars will *not* be changed to reflect this.
 
 Parameters are listed on [BL:RE's wiki](https://blrevive.gitlab.io/wiki/guides/hosting/game-server/parameters.html#blrevive-parameters).
 
-## Future plans
+### Using the API
 
-* An agent that manages game state (start, monitoring, crash handling, etc...)
-  * *Maybe* a "download game from steam and patch if not there" function in said agent, only if it doesn't bloat it too much
-* A (web?) API allowing priviledged actions such as restarts, gamemode changes, etc...
-  * An external Discord bot pluggeable to said API to allow gamemode changes votes
+Refer to [README_API.md](README_API.md)
+
+## Credits/Acknowledgements
+
+### Wine build & CI Build
+
+Both of these are essentially based on [pg9182/northstar-dedicated](https://github.com/pg9182/northstar-dedicated/)'s excellent zlib/libpng licensed image-making process.
+
+### MagicCow
+
+Bits of the REST API are either identical or very similar to [MagicCow's MIT licensed Discord bot](https://github.com/MajiKau/BLRE-Server-Info-Discord-Bot).
+
+Reason not to use that in the image to begin with is the (current) lack of separation between the whole Cheat Engine thing (which isn't quite possible on Wine/Docker), the bot, and the REST API itself. The architecture I have in mind cannot quite fuse all of them in one. I'll most likely strive to maintain interoperability between the two when possible however.
