@@ -46,8 +46,8 @@ Startup server settings can be overriden using the following environment variabl
 | `MARS_SERVER_EXE`         | Server executable name mounted to the container, should be located in `/srv/blacklightre/Binaries/Win32/<exe>`   | `FoxGame-win32-Shipping-Patched-Server.exe` |
 | `MARS_SERVER_LISTEN_PORT` | Game UDP listen port. Changing not recommended, consider using a different port binding on the container instead | `7777`                                      |
 | `MARS_GAME_SERVERNAME`    | Server name                                                                                                      | `MARS Managed BLRE Server`                  |
-| `MARS_GAME_MAP`           | Map, overriden by playlist. Check the wiki for more informations                                                 | `HeloDeck`                                  |
-| `MARS_GAME_GAMEMODE`      | Gamemode, overriden by playlist. Check the wiki for more informations                                            | ``                                          |
+| `MARS_GAME_MAP`           | Initial Map, will be rotated by playlist. Check the wiki for more informations                                   | `HeloDeck`                                  |
+| `MARS_GAME_GAMEMODE`      | Gamemode, will be rotated by playlist. Check the wiki for more informations                                      | ``                                          |
 | `MARS_GAME_PLAYLIST`      | Server playlist                                                                                                  | ``                                          |
 | `MARS_GAME_NUMBOTS`       | Number of bots                                                                                                   | ``                                          |
 | `MARS_GAME_MAXPLAYERS`    | Maximum amount of players allowed                                                                                | ``                                          |
@@ -132,11 +132,11 @@ spec:
         #   - name: WINEDEBUG
         #     value: "warn+all"
         ports:
-        - name: blrevive-game
+        - name: game
           containerPort: 7777
           protocol: UDP
-        - name: blrevive-api
-          containerPort: 80
+        - name: api
+          containerPort: 5000
           protocol: TCP
         resources:
           requests:
@@ -164,9 +164,9 @@ metadata:
 spec:
   type: LoadBalancer
   ports:
-  - name: blrevive-game
+  - name: game
     port: 7777
-    targetPort: blrevive-game
+    targetPort: game
     protocol: UDP
   selector:
     app: blrevive
@@ -179,14 +179,33 @@ metadata:
   labels:
     app: blrevive
 spec:
-  type: LoadBalancer
   ports:
-  - name: blrevive-api
+  - name: api
     port: 80
-    targetPort: blrevive-api
+    targetPort: api
     protocol: TCP
   selector:
     app: blrevive
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: blrevive-ingress-insecure
+  namespace: blrevive
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+spec:
+  rules:
+  - host: blrevive.example.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: blrevive-game
+            port:
+              number: 80
+        path: /
+        pathType: ImplementationSpecific
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -204,7 +223,7 @@ spec:
       paths:
       - backend:
           service:
-            name: blrevive-game-service
+            name: blrevive-game
             port:
               number: 80
         path: /
