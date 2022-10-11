@@ -60,71 +60,71 @@ build() {
 		--with-x \
 		--with-gnutls \
 		--with-xinput2 \
-		--without-alsa \
-		--without-capi \
-		--without-coreaudio \
-		--without-cups \
-		--without-dbus \
-		--without-fontconfig \
-		--without-freetype \
-		--without-gettext \
-		--without-gphoto \
-		--without-gssapi \
-		--without-gstreamer \
-		--without-inotify \
-		--without-krb5 \
-		--without-ldap \
-		--without-netapi \
-		--without-openal \
-		--without-opencl \
-		--without-oss \
-		--without-pcap \
-		--without-pulse \
-		--without-sane \
-		--without-sdl \
-		--without-udev \
-		--without-usb \
-		--without-v4l2 \
-		--without-vulkan \
-		--without-xcomposite \
-		--without-xcursor \
-		--without-xfixes \
-		--without-xinerama \
-		--without-xinput \
-		--without-xrandr \
-		--without-xrender \
-		--without-xshape \
-		--without-xshm \
-		--without-xxf86vm \
-		\
-		--disable-d2d1 --disable-d3d10 --disable-d3d10_1 --disable-d3d10core --disable-d3d11 --disable-d3d12 --disable-d3d8 \
-		--disable-d3d8thk --disable-d3dcompiler_33 --disable-d3dcompiler_34 --disable-d3dcompiler_35 --disable-d3dcompiler_36 \
-		--disable-d3dcompiler_37 --disable-d3dcompiler_38 --disable-d3dcompiler_39 --disable-d3dcompiler_40 --disable-d3dcompiler_41 --disable-d3dcompiler_42 \
-        --disable-d3dcompiler_46 --disable-d3dim --disable-d3dim700 --disable-d3drm --disable-d3dx10_33 \
-		--disable-d3dx10_34 --disable-d3dx10_35 --disable-d3dx10_36 --disable-d3dx10_37 --disable-d3dx10_38 --disable-d3dx10_39 --disable-d3dx10_40 \
-		--disable-d3dx10_41 --disable-d3dx10_42 --disable-d3dx10_43 --disable-d3dx11_42 --disable-d3dx11_43 \
-		--disable-d3dx9_24 --disable-d3dx9_25 --disable-d3dx9_26 --disable-d3dx9_27 --disable-d3dx9_28 --disable-d3dx9_29 \
-		--disable-d3dx9_30 --disable-d3dx9_31 --disable-d3dx9_32 --disable-d3dx9_33 --disable-d3dx9_34 --disable-d3dx9_35 \
-		--disable-d3dx9_37 --disable-d3dx9_38 --disable-d3dx9_39 --disable-d3dx9_40 --disable-d3dx9_41 --disable-d3dx9_42 \
-		--disable-msvcirt --disable-msvcm80 \
-		--disable-msvcm90 --disable-msvcp100 --disable-msvcp120 --disable-msvcp120_app --disable-msvcp60 --disable-msvcp70 --disable-msvcp71 \
-		--disable-msvcp80 --disable-msvcp_win --disable-msvcr120 --disable-msvcr120_app --disable-msvcr70 --disable-msvcr71 --disable-msvcr80 \
-		\
-		--disable-tests --disable-notepad --disable-msxml --disable-msxml2 --disable-msxml3 --disable-msxml4 \
-		--disable-msxml6 --disable-msado15 --disable-msdaps --disable-msdasql \
-		--disable-quartz --disable-sapi --disable-wineps_drv --disable-winspool_drv --disable-mp3dmod \
-		\
-		--disable-fntcache --disable-fontsub --disable-fusion --disable-fwpuclnt --disable-gameux --disable-gamingtcui --disable-gdiplus --disable-glu32 \
-		--disable-gphoto2_ds --disable-gpkcsp --disable-hal --disable-hlink --disable-hnetcfg --disable-iccvid --disable-icmp --disable-ieframe \
-		--disable-ieproxy --disable-imagehlp --disable-inetcomm --disable-inetcpl_cpl --disable-inetmib1 --disable-infosoft --disable-initpki \
-		--disable-inkobj --disable-inseng --disable-iprop --disable-irprops_cpl --disable-itircl --disable-itss --disable-joy_cpl --disable-jscript \
-		--disable-jsproxy --disable-ksproxy_ax --disable-ksuser --disable-ktmw32 --disable-loadperf --disable-localspl --disable-localui --disable-lz32 \
-		--disable-mapi32 --disable-mapistub --disable-mciavi32 --disable-mcicda --disable-mciqtz32 --disable-mciseq --disable-mciwave --disable-mf \
-		--disable-mf3216 --disable-mferror --disable-mfmediaengine --disable-mfplat --disable-mfplay --disable-mfreadwrite --disable-mgmtapi \
-		--disable-midimap --disable-mmcndmgr --disable-msasn1 --disable-mscat32 --disable-mscms --disable-mscorwks --disable-msctf \
-		--disable-msctfmonitor --disable-msctfp --disable-msdelta --disable-msdrm --disable-msftedit --disable-mshtml --disable-mshtml_tlb --disable-msi \
-		--disable-msident --disable-msimg32 --disable-msimsg --disable-msimtf --disable-msisys_ocx --disable-msls31 --disable-msnet32 --disable-mspatcha \
-		--disable-msports --disable-msrle32 --disable-msscript_ocx --disable-mssign32 --disable-mssip32 --disable-mstask
+#		--without-alsa \
+#		--without-capi \
+#		--without-coreaudio \
+#		--without-cups \
+#		--without-dbus \
+#		--without-fontconfig \
+#		--without-freetype \
+#		--without-gettext \
+#		--without-gphoto \
+#		--without-gssapi \
+#		--without-gstreamer \
+#		--without-inotify \
+#		--without-krb5 \
+#		--without-ldap \
+#		--without-netapi \
+#		--without-openal \
+#		--without-opencl \
+#		--without-oss \
+#		--without-pcap \
+#		--without-pulse \
+#		--without-sane \
+#		--without-sdl \
+#		--without-udev \
+#		--without-usb \
+#		--without-v4l2 \
+#		--without-vulkan \
+#		--without-xcomposite \
+#		--without-xcursor \
+#		--without-xfixes \
+#		--without-xinerama \
+#		--without-xinput \
+#		--without-xrandr \
+#		--without-xrender \
+#		--without-xshape \
+#		--without-xshm \
+#		--without-xxf86vm \
+#		\
+#		--disable-d2d1 --disable-d3d10 --disable-d3d10_1 --disable-d3d10core --disable-d3d11 --disable-d3d12 --disable-d3d8 \
+#		--disable-d3d8thk --disable-d3dcompiler_33 --disable-d3dcompiler_34 --disable-d3dcompiler_35 --disable-d3dcompiler_36 \
+#		--disable-d3dcompiler_37 --disable-d3dcompiler_38 --disable-d3dcompiler_39 --disable-d3dcompiler_40 --disable-d3dcompiler_41 --disable-d3dcompiler_42 \
+#        --disable-d3dcompiler_46 --disable-d3dim --disable-d3dim700 --disable-d3drm --disable-d3dx10_33 \
+#		--disable-d3dx10_34 --disable-d3dx10_35 --disable-d3dx10_36 --disable-d3dx10_37 --disable-d3dx10_38 --disable-d3dx10_39 --disable-d3dx10_40 \
+#		--disable-d3dx10_41 --disable-d3dx10_42 --disable-d3dx10_43 --disable-d3dx11_42 --disable-d3dx11_43 \
+#		--disable-d3dx9_24 --disable-d3dx9_25 --disable-d3dx9_26 --disable-d3dx9_27 --disable-d3dx9_28 --disable-d3dx9_29 \
+#		--disable-d3dx9_30 --disable-d3dx9_31 --disable-d3dx9_32 --disable-d3dx9_33 --disable-d3dx9_34 --disable-d3dx9_35 \
+#		--disable-d3dx9_37 --disable-d3dx9_38 --disable-d3dx9_39 --disable-d3dx9_40 --disable-d3dx9_41 --disable-d3dx9_42 \
+#		--disable-msvcirt --disable-msvcm80 \
+#		--disable-msvcm90 --disable-msvcp100 --disable-msvcp120 --disable-msvcp120_app --disable-msvcp60 --disable-msvcp70 --disable-msvcp71 \
+#		--disable-msvcp80 --disable-msvcp_win --disable-msvcr120 --disable-msvcr120_app --disable-msvcr70 --disable-msvcr71 --disable-msvcr80 \
+#		\
+#		--disable-tests --disable-notepad --disable-msxml --disable-msxml2 --disable-msxml3 --disable-msxml4 \
+#		--disable-msxml6 --disable-msado15 --disable-msdaps --disable-msdasql \
+#		--disable-quartz --disable-sapi --disable-wineps_drv --disable-winspool_drv --disable-mp3dmod \
+#		\
+#		--disable-fntcache --disable-fontsub --disable-fusion --disable-fwpuclnt --disable-gameux --disable-gamingtcui --disable-gdiplus --disable-glu32 \
+#		--disable-gphoto2_ds --disable-gpkcsp --disable-hal --disable-hlink --disable-hnetcfg --disable-iccvid --disable-icmp --disable-ieframe \
+#		--disable-ieproxy --disable-imagehlp --disable-inetcomm --disable-inetcpl_cpl --disable-inetmib1 --disable-infosoft --disable-initpki \
+#		--disable-inkobj --disable-inseng --disable-iprop --disable-irprops_cpl --disable-itircl --disable-itss --disable-joy_cpl --disable-jscript \
+#		--disable-jsproxy --disable-ksproxy_ax --disable-ksuser --disable-ktmw32 --disable-loadperf --disable-localspl --disable-localui --disable-lz32 \
+#		--disable-mapi32 --disable-mapistub --disable-mciavi32 --disable-mcicda --disable-mciqtz32 --disable-mciseq --disable-mciwave --disable-mf \
+#		--disable-mf3216 --disable-mferror --disable-mfmediaengine --disable-mfplat --disable-mfplay --disable-mfreadwrite --disable-mgmtapi \
+#		--disable-midimap --disable-mmcndmgr --disable-msasn1 --disable-mscat32 --disable-mscms --disable-mscorwks --disable-msctf \
+#		--disable-msctfmonitor --disable-msctfp --disable-msdelta --disable-msdrm --disable-msftedit --disable-mshtml --disable-mshtml_tlb --disable-msi \
+#		--disable-msident --disable-msimg32 --disable-msimsg --disable-msimtf --disable-msisys_ocx --disable-msls31 --disable-msnet32 --disable-mspatcha \
+#		--disable-msports --disable-msrle32 --disable-msscript_ocx --disable-mssign32 --disable-mssip32 --disable-mstask
 
 		# Still a metric ton of potential disables, check https://github.com/pg9182/northstar-dedicated/blob/master/src/wine/APKBUILD for examples
 
