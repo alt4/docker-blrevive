@@ -1,0 +1,35 @@
+diff --git a/programs/winedbg/gdbproxy.c b/programs/winedbg/gdbproxy.c
+index 8d8ae30fce5..0cedaf0c96b 100644
+--- a/programs/winedbg/gdbproxy.c
++++ b/programs/winedbg/gdbproxy.c
+@@ -1472,7 +1472,7 @@ static enum packet_return packet_write_register(struct gdb_context* gdbctx)
+ 
+ static void packet_query_monitor_wnd_helper(struct gdb_context* gdbctx, HWND hWnd, int indent)
+ {
+-    char        buffer[128];
++    char        buffer[256];
+     char	clsName[128];
+     char	wndName[128];
+     HWND	child;
+@@ -1486,7 +1486,7 @@ static void packet_query_monitor_wnd_helper(struct gdb_context* gdbctx, HWND hWn
+        packet_reply_open(gdbctx);
+        packet_reply_add(gdbctx, "O");
+        snprintf(buffer, sizeof(buffer),
+-                "%*s%04Ix%*s%-17.17s %08x %0*Ix %.14s\n",
++                "%*s%04Ix%*s%-17.17s %08x %0*Ix %.80s\n",
+                 indent, "", (ULONG_PTR)hWnd, 13 - indent, "",
+                 clsName, GetWindowLongW(hWnd, GWL_STYLE),
+                 addr_width(gdbctx), (ULONG_PTR)GetWindowLongPtrW(hWnd, GWLP_WNDPROC),
+diff --git a/programs/winedbg/info.c b/programs/winedbg/info.c
+index 07b2a5acc8b..ca4758238e0 100644
+--- a/programs/winedbg/info.c
++++ b/programs/winedbg/info.c
+@@ -392,7 +392,7 @@ static void info_window(HWND hWnd, int indent)
+         if (!GetWindowTextA(hWnd, wndName, sizeof(wndName)))
+             strcpy(wndName, "-- Empty --");
+ 
+-        dbg_printf("%*s%08Ix%*s %-17.17s %08x %0*Ix %08x %.14s\n",
++        dbg_printf("%*s%08Ix%*s %-17.17s %08x %0*Ix %08x %.80s\n",
+                    indent, "", (DWORD_PTR)hWnd, 12 - indent, "",
+                    clsName, GetWindowLongW(hWnd, GWL_STYLE),
+                    ADDRWIDTH, (ULONG_PTR)GetWindowLongPtrW(hWnd, GWLP_WNDPROC),
