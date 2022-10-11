@@ -24,6 +24,7 @@ makedepends="
 	libxrandr-dev
 	libxrender-dev
 	mesa-dev
+        freetype-dev
 	mingw-w64-gcc
 	mingw-w64-binutils
 	linux-headers
