@@ -61,6 +61,7 @@ build() {
 		--with-x \
 		--with-gnutls \
 		--with-xinput2 \
+		--disable-tests \
 #		--without-alsa \
 #		--without-capi \
 #		--without-coreaudio \
