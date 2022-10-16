@@ -59,7 +59,7 @@ build() {
 		--with-mingw \
 		--with-x \
 		--with-gnutls \
-		--with-xinput2 \
+		--with-xinput \
 		--without-alsa \
 		--without-capi \
 		--without-coreaudio \
@@ -90,7 +90,6 @@ build() {
 		--without-xcursor \
 		--without-xfixes \
 		--without-xinerama \
-		--without-xinput \
 		--without-xrandr \
 		--without-xrender \
 		--without-xshape \
