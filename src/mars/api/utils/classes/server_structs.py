@@ -74,7 +74,7 @@ class ServerOptions:
     """
     launch_options: LaunchOptions = LaunchOptions()
     staging_launch_options: LaunchOptions = LaunchOptions()
-    server_executable: str = "FoxGame-win32-Shipping-Patched-Server.exe"
+    server_executable: str = "BLR.exe"
     server_executable_path: Path = None
     pid_file_path: Path = None
     log_file_path: Path = None

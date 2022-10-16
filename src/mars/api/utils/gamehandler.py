@@ -68,6 +68,7 @@ class BLREHandler():
         try:
             if not self.process.poll():
                 state.running = True
+                state.server_name = self.server_options.launch_options.servername
                 command = ["wine", "winedbg", "--command", "info wnd"]
                 winedbg_output = subprocess.Popen(command, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(timeout=10)[0].decode()
                 self.logger.debug(winedbg_output)
