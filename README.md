@@ -1,6 +1,6 @@
 # BLRevive Docker Server
 
-![M.A.R.S. API personified, sorta. These Wine builds take ages, man](/marsapi.png "M.A.R.S API")
+<img title="M.A.R.S. API personified, I guess? These Wine builds take ages, man" align="right" height="275" width="330" src="https://gitlab.com/northamp/docker-blrevive/-/raw/master/marsapi.png" >
 
 A Docker implementation of the [Blacklight: Retribution Revive](https://gitlab.com/blrevive) server.
 
@@ -46,8 +46,8 @@ Startup server settings can be overriden using the following environment variabl
 | `MARS_SERVER_EXE`         | Server executable name mounted to the container, should be located in `/srv/blacklightre/Binaries/Win32/<exe>`   | `FoxGame-win32-Shipping-Patched-Server.exe` |
 | `MARS_SERVER_LISTEN_PORT` | Game UDP listen port. Changing not recommended, consider using a different port binding on the container instead | `7777`                                      |
 | `MARS_GAME_SERVERNAME`    | Server name                                                                                                      | `MARS Managed BLRE Server`                  |
-| `MARS_GAME_MAP`           | Map, overriden by playlist. Check the wiki for more informations                                                 | `HeloDeck`                                  |
-| `MARS_GAME_GAMEMODE`      | Gamemode, overriden by playlist. Check the wiki for more informations                                            | ``                                          |
+| `MARS_GAME_MAP`           | Initial Map, will be rotated by playlist. Check the wiki for more informations                                   | `HeloDeck`                                  |
+| `MARS_GAME_GAMEMODE`      | Gamemode, will be rotated by playlist. Check the wiki for more informations                                      | ``                                          |
 | `MARS_GAME_PLAYLIST`      | Server playlist                                                                                                  | ``                                          |
 | `MARS_GAME_NUMBOTS`       | Number of bots                                                                                                   | ``                                          |
 | `MARS_GAME_MAXPLAYERS`    | Maximum amount of players allowed                                                                                | ``                                          |
@@ -64,6 +64,175 @@ Parameters are listed on [BL:RE's wiki](https://blrevive.gitlab.io/wiki/guides/h
 ### Using the API
 
 Refer to [README_API.md](README_API.md)
+
+## Deployment
+
+Here's some sample deployment setups:
+
+### Docker-Compose
+
+```yaml
+version: '3'
+services:
+  blrevive:
+    image: registry.gitlab.com/northamp/docker-blrevive:latest
+    restart: always
+    environment:
+      - MARS_DEBUG="True"
+      - MARS_SERVER_EXE="FoxGame-win32-Shipping-Patched-Server.exe"
+      - MARS_GAME_SERVERNAME="And all I got was this lousy dock"
+      - MARS_GAME_PLAYLIST="KC"
+      - MARS_GAME_NUMBOTS="2"
+      - MARS_API_RCON_PASSWORD="MARSRcon"
+```
+
+### Kubernetes
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: blrevive-config
+  namespace: blrevive
+  labels:
+    app: blrevive
+data:
+  MARS_DEBUG: "True"
+  MARS_SERVER_EXE: "FoxGame-win32-Shipping-Patched-Server.exe"
+  MARS_GAME_SERVERNAME: "And all I got was this lousy kube"
+  MARS_GAME_PLAYLIST: "KC"
+  MARS_GAME_NUMBOTS: "2"
+  MARS_API_RCON_PASSWORD: "MARSRcon"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blrevive
+  namespace: blrevive
+  labels:
+    app: blrevive
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: blrevive
+  template:
+    metadata:
+      labels:
+        app: blrevive
+    spec:
+      containers:
+      - name: blrevive
+        image: registry.gitlab.com/northamp/docker-blrevive:latest
+        envFrom:
+          - configMapRef:
+              name: blrevive-config
+        # Wine debug messages
+        # env:
+        #   - name: WINEDEBUG
+        #     value: "warn+all"
+        ports:
+        - name: game
+          containerPort: 7777
+          protocol: UDP
+        - name: api
+          containerPort: 5000
+          protocol: TCP
+        resources:
+          requests:
+            memory: "1024M"
+            cpu: "0.25"
+          limits:
+            memory: "2048M"
+            cpu: "2"
+        volumeMounts:
+          - mountPath: /mnt/blacklightre/
+            name: blrevive-gamefiles
+            readOnly: true
+      volumes:
+        - name: blrevive-gamefiles
+          persistentVolumeClaim:
+            claimName: blrevive-pv-claim
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: blrevive-game
+  namespace: blrevive
+  labels:
+    app: blrevive
+spec:
+  type: LoadBalancer
+  ports:
+  - name: game
+    port: 7777
+    targetPort: game
+    protocol: UDP
+  selector:
+    app: blrevive
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: blrevive-api
+  namespace: blrevive
+  labels:
+    app: blrevive
+spec:
+  ports:
+  - name: api
+    port: 80
+    targetPort: api
+    protocol: TCP
+  selector:
+    app: blrevive
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: blrevive-ingress-insecure
+  namespace: blrevive
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+spec:
+  rules:
+  - host: blrevive.example.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: blrevive-game
+            port:
+              number: 80
+        path: /
+        pathType: ImplementationSpecific
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: blrevive-ingress
+  namespace: blrevive
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  rules:
+  - host: blrevive.example.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: blrevive-game
+            port:
+              number: 80
+        path: /
+        pathType: ImplementationSpecific
+  tls:
+  - hosts:
+    - blrevive.example.com
+    secretName: blrevive-example-com-tls
+```
 
 ## Credits/Acknowledgements
 
