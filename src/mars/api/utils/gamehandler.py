@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from xmlrpc.client import Server
 from xvfbwrapper import Xvfb
 import os
 import signal
@@ -7,7 +8,7 @@ import subprocess
 import logging
 import re
 
-from .classes.server_structs import ServerOptions
+from .classes.server_structs import ServerOptions, ServerInfo
 
 """Game-handling toolbox
 """
@@ -62,30 +63,26 @@ class BLREHandler():
 
         return self.process.pid
 
-    def get_state(self):
-        """Gets the current server state
-        """
-        # Ensure every values are returned, even if empty, to have a consistent json
-        # TODO? Use a class instead?
-        state = {
-            "running": False,
-            "last_exit_code": None,
-            "server_match_config": None
-        }
+    def get_ongoing_game_infos(self):
+        state = ServerInfo()
         try:
             if not self.process.poll():
-                state['running'] = True
+                state.running = True
+                command = ["wine", "winedbg", "--command", "info wnd"]
+                winedbg_output = subprocess.Popen(command, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(timeout=10)[0].decode()
+                self.logger.debug(winedbg_output)
             else:
-                state['running'] = False
-                state['last_exit_code'] = self.process.poll()
+                state.running = False
+                state.last_exit_code = self.process.poll()
         except AttributeError:
             self.logger.debug("No known process, cannot get the state")
-            state['running'] = False
+            state.running = False
         finally:
             if self.server_options.launch_options == self.server_options.staging_launch_options:
-                state['server_match_config'] = True
+                state.config_changed_since_restart = False
             else:
-                state['server_match_config'] = False
+                state.config_changed_since_restart = True
+            self.logger.debug('Current state: {}'.format(state))
             return state
 
     def stop(self):

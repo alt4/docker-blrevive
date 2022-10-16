@@ -4,20 +4,26 @@
 https://github.com/MajiKau/BLRE-Server-Info-Discord-Bot/blob/master/src/classes/server_structs.py
 """
 
-from dataclasses import dataclass
+import dataclasses
 from pathlib import Path
 import copy
 
-@dataclass
+@dataclasses.dataclass
 class ServerInfo:
-    playercount: int = 0
-    map: str = ''
-    playerlist: 'list[str]' = None
-    servername: str = ''
-    gamemode: str = ''
+    running: bool = False
+    last_exit_code: int = None
+    config_changed_since_restart: bool = None
+    server_name: str = None
+    player_count: int = None
+    current_map: str = None
+    player_list: 'list[str]' = None
+    game_mode: str = None
 
+    # Wonder whether or not that's the cleanest way to port the method (guess not)
+    def asdict(self):
+        return dataclasses.asdict(self)
 
-@dataclass
+@dataclasses.dataclass
 class LaunchOptions:
     """Contains game-specific options
     """
@@ -61,7 +67,7 @@ class LaunchOptions:
         self.scp = config['scp'] or self.scp
 
 
-@dataclass
+@dataclasses.dataclass
 class ServerOptions:
     """Contains global server options such as where the game executable is located, which log/PID file will be used, etc...
     Also contains the game's launch options in two forms: a "staging" form, and a 
