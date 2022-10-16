@@ -38,16 +38,16 @@ class LaunchOptions:
 
     def prepare_arguments(self):
         # Fasten your seatbelts
-        return "{map}{port}{servername}{playlist}{gamemode}{numbots}{maxplayers}{timelimit}{scp}".format(
+        return "{map}{port}{playlist}{gamemode}{numbots}{maxplayers}{timelimit}{scp}{servername}".format(
             map=self.map,
             port="?Port={}".format(self.port),
-            servername="?Servername={}".format(self.servername),
             playlist="?Playlist={}".format(self.playlist) if self.playlist else '',
             gamemode="?Game={}".format(self.gamemode) if self.gamemode else '',
             numbots="?NumBots={}".format(self.numbots) if self.numbots != 0 else '',
             maxplayers="?MaxPlayers={}".format(self.maxplayers) if self.maxplayers != 16 else '',
             timelimit="?TimeLimit={}".format(self.timelimit) if self.timelimit else '',
-            scp="?SCP={}".format(self.scp) if self.scp != 0 else ''
+            scp="?SCP={}".format(self.scp) if self.scp != 0 else '',
+            servername="?Servername={}".format(self.servername)
         )
 
     def load_from_dict(self, config: dict):
