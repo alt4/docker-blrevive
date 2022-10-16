@@ -1,6 +1,6 @@
 # BLRevive Docker Server
 
-![M.A.R.S. API personified, sorta. These Wine builds take ages, man](/marsapi.png "M.A.R.S API")
+<img title="M.A.R.S. API personified, I guess? These Wine builds take ages, man" align="right" height="275" width="330" src="https://gitlab.com/northamp/docker-blrevive/-/raw/master/marsapi.png" >
 
 A Docker implementation of the [Blacklight: Retribution Revive](https://gitlab.com/blrevive) server.
 
