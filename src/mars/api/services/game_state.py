@@ -20,7 +20,7 @@ def status_service():
         "game_mode": None,
         "current_map": None
     }
-    state.update(current_app.game_manager.get_ongoing_game_infos().asdict())
+    state.update(current_app.game_manager.get_state().asdict())
     return make_response(state, 200)
 
 def current_configuration_service():

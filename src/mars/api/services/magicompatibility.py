@@ -6,7 +6,7 @@
 from flask import make_response, current_app
 
 def server_service():
-    state = current_app.game_manager.get_ongoing_game_infos()
+    state = current_app.game_manager.get_state()
     returned_dict = {
             "PlayerCount": state.player_count,
             "Map": state.current_map,

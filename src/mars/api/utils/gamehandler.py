@@ -63,7 +63,7 @@ class BLREHandler():
 
         return self.process.pid
 
-    def get_ongoing_game_infos(self):
+    def get_state(self):
         state = ServerInfo()
         try:
             if not self.process.poll():
