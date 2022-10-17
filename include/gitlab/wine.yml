@@ -41,9 +41,6 @@ build-wine:
     entrypoint: [""]
   tags:
     - docker
-  only:
-    changes:
-      - src/wine/*
   before_script:
     - '[ "$SKIP_WINE_BUILD" = true ] && echo "Previous job said a release already exists, leaving." && exit 0'
     - echo "x86" > /etc/apk/arch
