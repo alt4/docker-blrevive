@@ -1,16 +1,48 @@
 # Wine-related CI process
 
+precheck-wine-build:
+  stage: build
+  image:
+    name: alpine:3.15.4
+    entrypoint: [""]
+  before_script:
+    - apk add jq curl
+    - |
+      PACKAGE_NAME=$(sed -n -e 's/^.*pkgname=//p' src/wine/APKBUILD)
+      APP_VERSION=$(sed -n -e 's/^.*pkgver=//p' src/wine/APKBUILD)
+      REL_VERSION=$(sed -n -e 's/^.*pkgrel=//p' src/wine/APKBUILD)
+      PACKAGE_VERSION="${APP_VERSION}-r${REL_VERSION}"
+      PROJECT_URL_ENCODED=$(echo $CI_PROJECT_PATH | jq -Rr @uri)
+      echo "PACKAGE_NAME=${PACKAGE_NAME}"
+      echo "APP_VERSION=${APP_VERSION}"
+      echo "REL_VERSION=${REL_VERSION}"
+      echo "PACKAGE_VERSION=${PACKAGE_VERSION}"
+      echo "PROJECT_URL_ENCODED=${PROJECT_URL_ENCODED}"
+  script:
+    - |
+      curl --header "JOB-TOKEN: $CI_JOB_TOKEN" "https://gitlab.com/api/v4/projects/${PROJECT_URL_ENCODED}/packages/" | jq -e ".[] | select(.version == \"${PACKAGE_VERSION}\")" && RET=$? || RET=$?
+      if [ $RET != 0 ]; then
+        echo "Did not see a ${PACKAGE_VERSION} release."
+        echo "SKIP_WINE_BUILD=false" >> .env.skip
+      else
+        echo "There already is a ${PACKAGE_VERSION} release, telling Gitlab to skip the build."
+        echo "SKIP_WINE_BUILD=true" >> .env.skip
+      fi
+  artifacts:
+    reports:
+      dotenv: .env.skip
+
 build-wine:
   stage: build
+  needs:
+    - precheck-wine-build
   image:
     name: alpine:3.15.4
     entrypoint: [""]
   tags:
     - docker
-  only:
-    changes:
-      - src/wine/*
   before_script:
+    - '[ "$SKIP_WINE_BUILD" = true ] && echo "Previous job said a release already exists, leaving." && exit 0'
     - echo "x86" > /etc/apk/arch
     - apk update && apk add alpine-sdk sudo git
     - adduser -Dh /builder builder
