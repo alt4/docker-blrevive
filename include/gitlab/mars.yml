@@ -1,0 +1,69 @@
+# M.A.R.S.-related CI process
+
+fetch-wine-packages:
+  stage: image
+  image:
+    name: alpine:3.15.4
+  script:
+    - |
+      PACKAGE_NAME=$(sed -n -e 's/^.*pkgname=//p' src/wine/APKBUILD)
+      APP_VERSION=$(sed -n -e 's/^.*pkgver=//p' src/wine/APKBUILD)
+      REL_VERSION=$(sed -n -e 's/^.*pkgrel=//p' src/wine/APKBUILD)
+      PACKAGE_VERSION="${APP_VERSION}-r${REL_VERSION}"
+      echo "PACKAGE_NAME=${PACKAGE_NAME}"
+      echo "APP_VERSION=${APP_VERSION}"
+      echo "REL_VERSION=${REL_VERSION}"
+      echo "PACKAGE_VERSION=${PACKAGE_VERSION}"
+    - mkdir -p $CI_PROJECT_DIR/pkg && cd $CI_PROJECT_DIR/pkg
+    # TODO: find a way to get files list automagically?
+    # - 'wget --header="JOB-TOKEN: $CI_JOB_TOKEN" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${PACKAGE_NAME}/${PACKAGE_VERSION}/APKINDEX.tar.gz"'
+    - 'wget --header="JOB-TOKEN: $CI_JOB_TOKEN" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${PACKAGE_NAME}/${PACKAGE_VERSION}/blrevive-server-wine-${PACKAGE_VERSION}.apk"'
+    - 'wget --header="JOB-TOKEN: $CI_JOB_TOKEN" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${PACKAGE_NAME}/${PACKAGE_VERSION}/blrevive-server-wine-dev-${PACKAGE_VERSION}.apk"'
+    - 'wget --header="JOB-TOKEN: $CI_JOB_TOKEN" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${PACKAGE_NAME}/${PACKAGE_VERSION}/blrevive-server-wine-doc-${PACKAGE_VERSION}.apk"'
+  artifacts:
+    name: $CI_PROJECT_NAME-wine
+    paths:
+      - ./pkg
+    expire_in: 10 minutes
+
+build-mars:
+  stage: image
+  needs:
+    - fetch-wine-packages
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  tags:
+    - docker
+  script:
+    - mkdir -p /kaniko/.docker
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    # Workaround for /var/run mount
+    - mv /var /var-orig
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/src/mars/Dockerfile --destination $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
+
+retag-experimental:
+  stage: deploy
+  only:
+    - /^.*-beta.*$/
+  image:
+    name: gcr.io/go-containerregistry/crane:debug
+    entrypoint: [""]
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - crane auth login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - crane cp $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME $CI_REGISTRY_IMAGE:experimental
+
+retag-latest:
+  stage: deploy
+  only:
+    - /^.*-release$/
+  image:
+    name: gcr.io/go-containerregistry/crane:debug
+    entrypoint: [""]
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - crane auth login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - crane cp $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME $CI_REGISTRY_IMAGE:latest

@@ -13,7 +13,6 @@ license="LGPL-2.0-or-later"
 options="textrels !check" # As of 2.0.3 most of the tests fails
 subpackages="$pkgname-dev $pkgname-doc"
 depends_dev="$pkgname perl"
-# Game is fine starting without a display, wonder if mesa is even necessary
 makedepends="
 	autoconf
 	automake
@@ -30,7 +29,7 @@ makedepends="
 	"
 source="https://dl.winehq.org/wine/source/7.0/wine-$pkgver.tar.xz
 	rpath.patch
-        wider-cols-winedbg.patch
+	wider-cols-winedbg.patch
 	"
 builddir="$srcdir/wine-$pkgver"
 
@@ -99,7 +98,7 @@ build() {
 		--disable-d2d1 --disable-d3d10 --disable-d3d10_1 --disable-d3d10core --disable-d3d11 --disable-d3d12 --disable-d3d8 \
 		--disable-d3d8thk --disable-d3dcompiler_33 --disable-d3dcompiler_34 --disable-d3dcompiler_35 --disable-d3dcompiler_36 \
 		--disable-d3dcompiler_37 --disable-d3dcompiler_38 --disable-d3dcompiler_39 --disable-d3dcompiler_40 --disable-d3dcompiler_41 --disable-d3dcompiler_42 \
-        --disable-d3dcompiler_46 --disable-d3dim --disable-d3dim700 --disable-d3drm --disable-d3dx10_33 \
+		--disable-d3dcompiler_46 --disable-d3dim --disable-d3dim700 --disable-d3drm --disable-d3dx10_33 \
 		--disable-d3dx10_34 --disable-d3dx10_35 --disable-d3dx10_36 --disable-d3dx10_37 --disable-d3dx10_38 --disable-d3dx10_39 --disable-d3dx10_40 \
 		--disable-d3dx10_41 --disable-d3dx10_42 --disable-d3dx10_43 --disable-d3dx11_42 --disable-d3dx11_43 \
 		--disable-d3dx9_24 --disable-d3dx9_25 --disable-d3dx9_26 --disable-d3dx9_27 --disable-d3dx9_28 --disable-d3dx9_29 \
