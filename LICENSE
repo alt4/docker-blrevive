@@ -20,7 +20,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-CI and Wine build mostly based on https://github.com/pg9182/northstar-dedicated
+Wine build mostly based on https://github.com/pg9182/northstar-dedicated
 It is licensed as such:
 
                      Copyright (c) 2021-2022 pg9182
