@@ -28,7 +28,7 @@ fetch-wine-packages:
 
 build-mars:
   stage: image
-  dependencies:
+  needs:
     - fetch-wine-packages
   image:
     name: gcr.io/kaniko-project/executor:debug
