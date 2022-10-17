@@ -20,8 +20,8 @@ precheck-wine-build:
       echo "PROJECT_URL_ENCODED=${PROJECT_URL_ENCODED}"
   script:
     - |
-      curl --header "JOB-TOKEN: $CI_JOB_TOKEN" "https://gitlab.com/api/v4/projects/${PROJECT_URL_ENCODED}/packages/" | jq -e ".[] | select(.version == \"${PACKAGE_VERSION}\")" || RET=$?
-      if [[ $RET != 0 ]]; then
+      curl --header "JOB-TOKEN: $CI_JOB_TOKEN" "https://gitlab.com/api/v4/projects/${PROJECT_URL_ENCODED}/packages/" | jq -e ".[] | select(.version == \"${PACKAGE_VERSION}\")" && RET=$? || RET=$?
+      if [ $RET != 0 ]; then
         echo "Did not see a ${PACKAGE_VERSION} release."
         echo "SKIP_WINE_BUILD=false" >> .env.skip
       else
