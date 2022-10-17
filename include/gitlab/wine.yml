@@ -18,18 +18,20 @@ build-wine:
     - "echo 'builder ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/builder"
     - sudo -u builder abuild-keygen -ain
     - ulimit -n 1024
-    - chown -R builder:builder .
+    - mkdir -p /builder/src/main /builder/packages/main
+    - cp -r ./src/wine/ /builder/src/main/wine/
+    - chown -R builder:builder /builder
   script:
-    - cd src/wine
+    - cd /builder/src/main/wine/
     - sudo -u builder abuild -r
     - |
       PACKAGE_NAME=$(sed -n -e 's/^.*pkgname=//p' APKBUILD)
-      PACKAGE_VERSION=$(ls /builder/packages/$CI_PROJECT_NAME/x86/ | grep -Eo "(\d+\.\d+\-r\d+)" | head -n 1)
+      PACKAGE_VERSION=$(ls /builder/packages/main/x86/ | grep -Eo "(\d+\.\d+\-r\d+)" | head -n 1)
       echo "PACKAGE_NAME=${PACKAGE_NAME}"
       echo "PACKAGE_VERSION=${PACKAGE_VERSION}"
     - |
-      for FILE_PATH in /builder/packages/$CI_PROJECT_NAME/x86/*.apk
+      for FILE_PATH in /builder/packages/main/x86/*.apk
       do
-        FILE_NAME=$(basename ${package_path})
+        FILE_NAME=$(basename ${FILE_PATH})
         curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file ${FILE_PATH} "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${PACKAGE_NAME}/${PACKAGE_VERSION}/${FILE_NAME}"
       done

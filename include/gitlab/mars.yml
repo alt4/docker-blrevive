@@ -16,7 +16,7 @@ fetch-wine-packages:
       echo "PACKAGE_VERSION=${PACKAGE_VERSION}"
     - mkdir -p $CI_PROJECT_DIR/pkg && cd $CI_PROJECT_DIR/pkg
     # TODO: find a way to get files list automagically?
-    - 'wget --header="JOB-TOKEN: $CI_JOB_TOKEN" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${PACKAGE_NAME}/${PACKAGE_VERSION}/APKINDEX.tar.gz"'
+    # - 'wget --header="JOB-TOKEN: $CI_JOB_TOKEN" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${PACKAGE_NAME}/${PACKAGE_VERSION}/APKINDEX.tar.gz"'
     - 'wget --header="JOB-TOKEN: $CI_JOB_TOKEN" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${PACKAGE_NAME}/${PACKAGE_VERSION}/blrevive-server-wine-${PACKAGE_VERSION}.apk"'
     - 'wget --header="JOB-TOKEN: $CI_JOB_TOKEN" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${PACKAGE_NAME}/${PACKAGE_VERSION}/blrevive-server-wine-dev-${PACKAGE_VERSION}.apk"'
     - 'wget --header="JOB-TOKEN: $CI_JOB_TOKEN" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${PACKAGE_NAME}/${PACKAGE_VERSION}/blrevive-server-wine-doc-${PACKAGE_VERSION}.apk"'
