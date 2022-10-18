@@ -1,7 +1,7 @@
 # Maintainer: alt <north4mp@gmail.com>
 pkgname=blrevive-server-wine
 pkgver=7.0
-pkgrel=0
+pkgrel=1
 pkgdesc="Tailored Wine build to run a Blacklight: Retribution Revived dedicated server on Docker Alpine"
 
 # BL:RE is exclusively 32 bits, probably better to build a completely 32 bits pkg
