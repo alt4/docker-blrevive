@@ -23,6 +23,7 @@ class ServerInfo:
     def asdict(self):
         return dataclasses.asdict(self)
 
+
 @dataclasses.dataclass
 class LaunchOptions:
     """Contains game-specific options
@@ -70,7 +71,7 @@ class LaunchOptions:
 @dataclasses.dataclass
 class ServerOptions:
     """Contains global server options such as where the game executable is located, which log/PID file will be used, etc...
-    Also contains the game's launch options in two forms: a "staging" form, and a 
+    Also contains the game's launch options in two forms: a "staging" form, which contains the desired configuration which will be applied upon restarting, and the current process' configuration.
     """
     launch_options: LaunchOptions = LaunchOptions()
     staging_launch_options: LaunchOptions = LaunchOptions()

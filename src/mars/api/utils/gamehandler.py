@@ -69,9 +69,14 @@ class BLREHandler():
             if not self.process.poll():
                 state.running = True
                 state.server_name = self.server_options.launch_options.servername
+                state.game_mode = self.server_options.launch_options.gamemode
                 command = ["wine", "winedbg", "--command", "info wnd"]
-                winedbg_output = subprocess.Popen(command, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(timeout=10)[0].decode()
+                winedbg_output = subprocess.Popen(command, shell=False, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(timeout=10)[0].decode()
                 self.logger.debug(winedbg_output)
+                parsed_winedbg_output = re.findall(r"\[VER (.*)\] \[POP (\d{1,2})\] \[MAP (\w+)\]", winedbg_output)
+                if len(parsed_winedbg_output) > 1:
+                    raise ValueError('Unexpected amount of matches when parsing winedbg output ({}). Is there more than one BL:RE running?'.format(len(parsed_winedbg_output)))
+                _, state.player_count, state.current_map = parsed_winedbg_output[0]
             else:
                 state.running = False
                 state.last_exit_code = self.process.poll()
@@ -157,6 +162,6 @@ class BLREHandler():
             else:
                 self.logger.error("A PID file unexpectedly exists, but no process is fitting. Expect trouble.")
         elif pidfiles:
-            self.logger.debug("Seems like other BL:RE servers are currently running due to these files existing: {}".format(pidfiles))
+            self.logger.warn("Seems like other BL:RE servers are currently running due to these files existing: {}".format(pidfiles))
         else:
             self.logger.debug("No other PID files known")
