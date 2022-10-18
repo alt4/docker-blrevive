@@ -69,7 +69,10 @@ class BLREHandler():
             if not self.process.poll():
                 state.running = True
                 state.server_name = self.server_options.launch_options.servername
-                state.game_mode = self.server_options.launch_options.gamemode
+                if not self.server_options.launch_options.playlist:
+                    state.game_mode = self.server_options.launch_options.playlist
+                else:
+                    state.game_mode = self.server_options.launch_options.gamemode
                 command = ["wine", "winedbg", "--command", "info wnd"]
                 winedbg_output = subprocess.Popen(command, shell=False, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(timeout=10)[0].decode()
                 self.logger.debug(winedbg_output)

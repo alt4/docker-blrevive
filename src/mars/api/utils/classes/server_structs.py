@@ -30,12 +30,12 @@ class LaunchOptions:
     """
     map: str = 'HeloDeck'
     servername: str = 'MARS Managed Server'
-    gamemode: str = ''
+    gamemode: str = None
     port: int = 7777
-    numbots: int = 0 # Changed from Magi's to fit servers own denomination
+    numbots: int = None # Changed from Magi's to fit servers own denomination
     maxplayers: int = 16
-    playlist: str = '' # Also changed so it doesn't default to a playlist, overriding simple map/gamemode choices
-    scp: int = 0
+    playlist: str = None # Also changed so it doesn't default to a playlist, overriding simple map/gamemode choices
+    scp: int = None
     timelimit: int = None
 
     def __init__(self, config: dict = {}):
@@ -49,11 +49,11 @@ class LaunchOptions:
             map=self.map,
             port="?Port={}".format(self.port),
             playlist="?Playlist={}".format(self.playlist) if self.playlist else '',
-            gamemode="?Game={}".format(self.gamemode) if self.gamemode else '',
-            numbots="?NumBots={}".format(self.numbots) if self.numbots != 0 else '',
+            gamemode="?Game=FoxGame.FoxGameMP_{}".format(self.playlist) if self.playlist else "?Game=FoxGame.FoxGameMP_{}".format(self.gamemode) if self.gamemode else '',
+            numbots="?NumBots={}".format(self.numbots) if self.numbots else '',
             maxplayers="?MaxPlayers={}".format(self.maxplayers) if self.maxplayers != 16 else '',
             timelimit="?TimeLimit={}".format(self.timelimit) if self.timelimit else '',
-            scp="?SCP={}".format(self.scp) if self.scp != 0 else '',
+            scp="?SCP={}".format(self.scp) if self.scp else '',
             servername="?Servername={}".format(self.servername)
         )
 
