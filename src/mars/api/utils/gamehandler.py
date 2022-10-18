@@ -77,6 +77,7 @@ class BLREHandler():
                 if len(parsed_winedbg_output) > 1:
                     raise ValueError('Unexpected amount of matches when parsing winedbg output ({}). Is there more than one BL:RE running?'.format(len(parsed_winedbg_output)))
                 _, state.player_count, state.current_map = parsed_winedbg_output[0]
+                state.player_count = int(state.player_count)
             else:
                 state.running = False
                 state.last_exit_code = self.process.poll()
