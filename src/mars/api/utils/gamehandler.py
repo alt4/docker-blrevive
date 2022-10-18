@@ -53,7 +53,7 @@ class BLREHandler():
         self.serverlog = open(self.server_options.log_file_path, 'w')
 
         self.logger.debug('Trying to spawn a new server with the following command: {}'.format(command))
-        self.process = subprocess.Popen(command, cwd=self.server_options.server_executable_path.parent, shell=False, stdout=self.serverlog, stderr=subprocess.STDOUT)
+        self.process = subprocess.Popen(command, cwd=self.server_options.server_executable_path.parent, shell=False, stdin=subprocess.DEVNULL, stdout=self.serverlog, stderr=subprocess.STDOUT)
 
         with open(self.server_options.pid_file_path, 'w') as pidfile:
             pidfile.write(str(self.process.pid))
