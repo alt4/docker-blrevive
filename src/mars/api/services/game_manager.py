@@ -6,14 +6,14 @@
 from flask import make_response, current_app
 
 def start_service():
-    if not current_app.game_manager.get_state()['running']:
+    if not current_app.game_manager.get_state().running:
         current_app.game_manager.start()
         return make_response("Starting", 200)
     else:
         return make_response("Already running", 409)
 
 def stop_service():
-    if current_app.game_manager.get_state()['running']:
+    if current_app.game_manager.get_state().running:
         current_app.game_manager.stop()
         return make_response("Stopping", 200)
     else:

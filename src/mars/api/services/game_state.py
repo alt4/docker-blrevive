@@ -12,7 +12,16 @@ def whoami_service():
     }, 200)
 
 def status_service():
-    return make_response(current_app.game_manager.get_state(), 200)
+    state = {
+        "running": False,
+        "last_exit_code": None,
+        "config_changed_since_restart": None,
+        "server_name": None,
+        "game_mode": None,
+        "current_map": None
+    }
+    state.update(current_app.game_manager.get_state().asdict())
+    return make_response(state, 200)
 
 def current_configuration_service():
     return make_response(current_app.game_manager.server_options.launch_options.__dict__, 200)

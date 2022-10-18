@@ -236,9 +236,9 @@ spec:
 
 ## Credits/Acknowledgements
 
-### Wine build & CI Build
+### Wine build
 
-Both of these are essentially based on [pg9182/northstar-dedicated](https://github.com/pg9182/northstar-dedicated/)'s excellent zlib/libpng licensed image-making process.
+Though the CI and imaging processes are now different, they are essentially based on [pg9182/northstar-dedicated](https://github.com/pg9182/northstar-dedicated/)'s excellent zlib/libpng licensed project.
 
 ### MagicCow
 

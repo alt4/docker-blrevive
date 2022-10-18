@@ -1,0 +1,69 @@
+# Wine-related CI process
+
+precheck-wine-build:
+  stage: build
+  image:
+    name: alpine:3.15.4
+    entrypoint: [""]
+  before_script:
+    - apk add jq curl
+    - |
+      PACKAGE_NAME=$(sed -n -e 's/^.*pkgname=//p' src/wine/APKBUILD)
+      APP_VERSION=$(sed -n -e 's/^.*pkgver=//p' src/wine/APKBUILD)
+      REL_VERSION=$(sed -n -e 's/^.*pkgrel=//p' src/wine/APKBUILD)
+      PACKAGE_VERSION="${APP_VERSION}-r${REL_VERSION}"
+      PROJECT_URL_ENCODED=$(echo $CI_PROJECT_PATH | jq -Rr @uri)
+      echo "PACKAGE_NAME=${PACKAGE_NAME}"
+      echo "APP_VERSION=${APP_VERSION}"
+      echo "REL_VERSION=${REL_VERSION}"
+      echo "PACKAGE_VERSION=${PACKAGE_VERSION}"
+      echo "PROJECT_URL_ENCODED=${PROJECT_URL_ENCODED}"
+  script:
+    - |
+      curl --header "JOB-TOKEN: $CI_JOB_TOKEN" "https://gitlab.com/api/v4/projects/${PROJECT_URL_ENCODED}/packages/" | jq -e ".[] | select(.version == \"${PACKAGE_VERSION}\")" && RET=$? || RET=$?
+      if [ $RET != 0 ]; then
+        echo "Did not see a ${PACKAGE_VERSION} release."
+        echo "SKIP_WINE_BUILD=false" >> .env.skip
+      else
+        echo "There already is a ${PACKAGE_VERSION} release, telling Gitlab to skip the build."
+        echo "SKIP_WINE_BUILD=true" >> .env.skip
+      fi
+  artifacts:
+    reports:
+      dotenv: .env.skip
+
+build-wine:
+  stage: build
+  needs:
+    - precheck-wine-build
+  image:
+    name: alpine:3.15.4
+    entrypoint: [""]
+  tags:
+    - docker
+  before_script:
+    - '[ "$SKIP_WINE_BUILD" = true ] && echo "Previous job said a release already exists, leaving." && exit 0'
+    - echo "x86" > /etc/apk/arch
+    - apk update && apk add alpine-sdk sudo git
+    - adduser -Dh /builder builder
+    - adduser builder abuild
+    - "echo 'builder ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/builder"
+    - sudo -u builder abuild-keygen -ain
+    - ulimit -n 1024
+    - mkdir -p /builder/src/main /builder/packages/main
+    - cp -r ./src/wine/ /builder/src/main/wine/
+    - chown -R builder:builder /builder
+  script:
+    - cd /builder/src/main/wine/
+    - sudo -u builder abuild -r
+    - |
+      PACKAGE_NAME=$(sed -n -e 's/^.*pkgname=//p' APKBUILD)
+      PACKAGE_VERSION=$(ls /builder/packages/main/x86/ | grep -Eo "(\d+\.\d+\-r\d+)" | head -n 1)
+      echo "PACKAGE_NAME=${PACKAGE_NAME}"
+      echo "PACKAGE_VERSION=${PACKAGE_VERSION}"
+    - |
+      for FILE_PATH in /builder/packages/main/x86/*.apk
+      do
+        FILE_NAME=$(basename ${FILE_PATH})
+        curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file ${FILE_PATH} "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${PACKAGE_NAME}/${PACKAGE_VERSION}/${FILE_NAME}"
+      done

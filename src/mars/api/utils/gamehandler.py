@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from xmlrpc.client import Server
 from xvfbwrapper import Xvfb
 import os
 import signal
@@ -7,7 +8,7 @@ import subprocess
 import logging
 import re
 
-from .classes.server_structs import ServerOptions
+from .classes.server_structs import ServerOptions, ServerInfo
 
 """Game-handling toolbox
 """
@@ -52,7 +53,7 @@ class BLREHandler():
         self.serverlog = open(self.server_options.log_file_path, 'w')
 
         self.logger.debug('Trying to spawn a new server with the following command: {}'.format(command))
-        self.process = subprocess.Popen(command, cwd=self.server_options.server_executable_path.parent, shell=False, stdout=self.serverlog, stderr=subprocess.STDOUT)
+        self.process = subprocess.Popen(command, cwd=self.server_options.server_executable_path.parent, shell=False, stdin=subprocess.DEVNULL, stdout=self.serverlog, stderr=subprocess.STDOUT)
 
         with open(self.server_options.pid_file_path, 'w') as pidfile:
             pidfile.write(str(self.process.pid))
@@ -63,29 +64,35 @@ class BLREHandler():
         return self.process.pid
 
     def get_state(self):
-        """Gets the current server state
-        """
-        # Ensure every values are returned, even if empty, to have a consistent json
-        # TODO? Use a class instead?
-        state = {
-            "running": False,
-            "last_exit_code": None,
-            "server_match_config": None
-        }
+        state = ServerInfo()
         try:
             if not self.process.poll():
-                state['running'] = True
+                state.running = True
+                state.server_name = self.server_options.launch_options.servername
+                if not self.server_options.launch_options.playlist:
+                    state.game_mode = self.server_options.launch_options.playlist
+                else:
+                    state.game_mode = self.server_options.launch_options.gamemode
+                command = ["wine", "winedbg", "--command", "info wnd"]
+                winedbg_output = subprocess.Popen(command, shell=False, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(timeout=10)[0].decode()
+                self.logger.debug(winedbg_output)
+                parsed_winedbg_output = re.findall(r"\[VER (.*)\] \[POP (\d{1,2})\] \[MAP (\w+)\]", winedbg_output)
+                if len(parsed_winedbg_output) > 1:
+                    raise ValueError('Unexpected amount of matches when parsing winedbg output ({}). Is there more than one BL:RE running?'.format(len(parsed_winedbg_output)))
+                _, state.player_count, state.current_map = parsed_winedbg_output[0]
+                state.player_count = int(state.player_count)
             else:
-                state['running'] = False
-                state['last_exit_code'] = self.process.poll()
+                state.running = False
+                state.last_exit_code = self.process.poll()
         except AttributeError:
             self.logger.debug("No known process, cannot get the state")
-            state['running'] = False
+            state.running = False
         finally:
             if self.server_options.launch_options == self.server_options.staging_launch_options:
-                state['server_match_config'] = True
+                state.config_changed_since_restart = False
             else:
-                state['server_match_config'] = False
+                state.config_changed_since_restart = True
+            self.logger.debug('Current state: {}'.format(state))
             return state
 
     def stop(self):
@@ -159,6 +166,6 @@ class BLREHandler():
             else:
                 self.logger.error("A PID file unexpectedly exists, but no process is fitting. Expect trouble.")
         elif pidfiles:
-            self.logger.debug("Seems like other BL:RE servers are currently running due to these files existing: {}".format(pidfiles))
+            self.logger.warn("Seems like other BL:RE servers are currently running due to these files existing: {}".format(pidfiles))
         else:
             self.logger.debug("No other PID files known")

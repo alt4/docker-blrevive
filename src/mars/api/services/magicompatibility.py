@@ -6,13 +6,15 @@
 from flask import make_response, current_app
 
 def server_service():
-    return make_response({
-        "PlayerCount": 0,
-        "Map": None,
-        "PlayerList": [],
-        "ServerName": current_app.game_manager.server_options.launch_options.servername,
-        "GameMode": None
-    }, 200)
+    state = current_app.game_manager.get_state()
+    returned_dict = {
+            "PlayerCount": state.player_count,
+            "Map": state.current_map,
+            "PlayerList": [],
+            "ServerName": state.server_name,
+            "GameMode": state.game_mode
+    }
+    return make_response(returned_dict, 200)
 
 def players_service():
     return make_response({'error': 'Not implemented'}, 501)
