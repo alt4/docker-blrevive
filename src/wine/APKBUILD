@@ -26,6 +26,7 @@ makedepends="
 	mingw-w64-gcc
 	mingw-w64-binutils
 	linux-headers
+	freetype-dev
 	"
 source="https://dl.winehq.org/wine/source/7.0/wine-$pkgver.tar.xz
 	rpath.patch
@@ -59,13 +60,13 @@ build() {
 		--with-x \
 		--with-gnutls \
 		--with-xinput \
+		--with-freetype \
 		--without-alsa \
 		--without-capi \
 		--without-coreaudio \
 		--without-cups \
 		--without-dbus \
 		--without-fontconfig \
-		--without-freetype \
 		--without-gettext \
 		--without-gphoto \
 		--without-gssapi \
