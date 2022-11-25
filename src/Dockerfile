@@ -41,24 +41,14 @@ RUN apk add --no-cache gnutls tzdata ca-certificates xvfb python3 py3-pip
 # silence Xvfb xkbcomp warnings by working around the bug (present in libX11 1.7.2) fixed in libX11 1.8 by https://gitlab.freedesktop.org/xorg/lib/libx11/-/merge_requests/79
 RUN echo 'partial xkb_symbols "evdev" {};' > /usr/share/X11/xkb/symbols/inet
 
-# Python preparations
-COPY ./src/mars/ /srv/mars
-WORKDIR /srv/mars
-RUN pip install -r /srv/mars/requirements-gunicorn.txt
-
-COPY ./src/start.sh /srv/mars/start.sh
-RUN mkdir -p /mnt/blacklightre /srv/mars/logs /srv/mars/pid && \
-    chmod +x start.sh && \
-    chown blrevive:blrevive -R /srv/mars/logs /srv/mars/pid
+COPY ./src/start.sh /srv/blacklightre/start.sh
+RUN chmod +x /srv/blacklightre/start.sh
 
 USER blrevive
 
 VOLUME /mnt/blacklightre
 
 ENV PATH="/srv/mars/:$PATH"
-
-ENV MARS_API_LISTEN_IP=0.0.0.0
-ENV MARS_API_LISTEN_PORT=5000
 
 EXPOSE 7777/udp
 EXPOSE 5000/tcp

@@ -1,3 +1,3 @@
 #!/bin/sh
 
-gunicorn -b $MARS_API_LISTEN_IP:$MARS_API_LISTEN_PORT api
+wine ${BLRE_SERVER_EXE} server ${BLRE_GAME_MAP}?Playlist=${BLRE_GAME_PLAYLIST}?NumBots=${BLRE_GAME_NUMBOTS}?port=${BLRE_SERVER_LISTEN_PORT}
