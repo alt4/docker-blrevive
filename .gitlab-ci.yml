@@ -6,4 +6,4 @@ stages:
 
 include:
   - local: "/include/gitlab/wine.yml"
-  - local: "/include/gitlab/mars.yml"
+  - local: "/include/gitlab/game.yml"
