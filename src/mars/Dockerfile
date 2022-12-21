@@ -47,7 +47,6 @@ WORKDIR /srv/mars
 RUN pip install -r /srv/mars/requirements.txt
 
 RUN mkdir -p /mnt/blacklightre /srv/mars/logs /srv/mars/pid && \
-    chmod +x start.sh && \
     chown blrevive:blrevive -R /srv/mars/logs /srv/mars/pid
 
 USER blrevive
