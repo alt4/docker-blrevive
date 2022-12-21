@@ -44,9 +44,8 @@ RUN echo 'partial xkb_symbols "evdev" {};' > /usr/share/X11/xkb/symbols/inet
 # Python preparations
 COPY ./src/mars/ /srv/mars
 WORKDIR /srv/mars
-RUN pip install -r /srv/mars/requirements-gunicorn.txt
+RUN pip install -r /srv/mars/requirements.txt
 
-COPY ./src/start.sh /srv/mars/start.sh
 RUN mkdir -p /mnt/blacklightre /srv/mars/logs /srv/mars/pid && \
     chmod +x start.sh && \
     chown blrevive:blrevive -R /srv/mars/logs /srv/mars/pid
@@ -57,10 +56,7 @@ VOLUME /mnt/blacklightre
 
 ENV PATH="/srv/mars/:$PATH"
 
-ENV MARS_API_LISTEN_IP=0.0.0.0
-ENV MARS_API_LISTEN_PORT=5000
-
 EXPOSE 7777/udp
 EXPOSE 5000/tcp
 
-CMD ["./start.sh"]
+ENTRYPOINT ["python", "launcher.py"]
