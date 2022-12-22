@@ -58,4 +58,4 @@ ENV PATH="/srv/mars/:$PATH"
 EXPOSE 7777/udp
 EXPOSE 5000/tcp
 
-ENTRYPOINT ["python", "launcher.py"]
+ENTRYPOINT ["python3", "launcher.py"]

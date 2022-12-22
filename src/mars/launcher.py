@@ -20,14 +20,14 @@ class LaunchOptions:
     https://github.com/MajiKau/BLRE-Server-Info-Discord-Bot/blob/master/src/classes/server_structs.py
     """
     map: str = 'HeloDeck'
-    servername: str = 'MARS Managed Server'
-    gamemode: str = None
     port: int = 7777
+    playlist: str = None # Also changed so it doesn't default to a playlist, overriding simple map/gamemode choices
+    gamemode: str = None
     numbots: int = None # Changed from Magi's to fit servers own denomination
     maxplayers: int = 16
-    playlist: str = None # Also changed so it doesn't default to a playlist, overriding simple map/gamemode choices
-    scp: int = None
     timelimit: int = None
+    scp: int = None
+    servername: str = 'MARS Managed Server'
 
     def __init__(self, config: dict = {}):
         super().__init__()
@@ -50,13 +50,14 @@ class LaunchOptions:
 
     def load_from_dict(self, config: dict):
         self.map = config['map'] or self.map
-        self.servername = config['servername'] or self.servername
-        self.gamemode = config['gamemode'] or self.gamemode
+        self.port = config['port'] or self.port
         self.playlist = config['playlist'] or self.playlist
+        self.gamemode = config['gamemode'] or self.gamemode
         self.numbots = config['numbots'] or self.numbots
         self.maxplayers = config['maxplayers'] or self.maxplayers
         self.timelimit = config['timelimit'] or self.timelimit
         self.scp = config['scp'] or self.scp
+        self.servername = config['servername'] or self.servername
 
 
 @dataclasses.dataclass
@@ -197,6 +198,7 @@ def parse_env():
     config['debug'] = os.getenv('MARS_DEBUG')
     config['server'] = {}
     config['server']['exe'] = os.getenv('MARS_SERVER_EXE')
+    config['server']['port'] = os.getenv('MARS_SERVER_PORT')
     config['game'] = {}
     config['game']['map'] = os.getenv('MARS_GAME_MAP')
     config['game']['servername'] = os.getenv('MARS_GAME_SERVERNAME')
