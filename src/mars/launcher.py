@@ -9,6 +9,7 @@ import signal
 import subprocess
 import logging
 import time
+import sys
 
 import dataclasses
 from pathlib import Path
@@ -189,6 +190,8 @@ class BLREHandler():
         while self.ensure_alive():
             self.logger.debug("Server's running.")
             time.sleep(5)
+
+        sys.exit(self.process.poll())
 
 
 def parse_env():
