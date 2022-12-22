@@ -78,6 +78,7 @@ class ServerOptions:
         if not server_executable_path.is_file():
             raise FileNotFoundError('Could not find BL:RE executable: {}'.format(server_executable_path))
 
+        self.launch_options = LaunchOptions(config['game'])
         self.server_executable=config['server']['exe'] or self.server_executable
         self.server_executable_path=server_executable_path
         self.pid_file_path=Path('/srv/mars/pid/blrevive-{}.pid'.format(config['server']['port'] or self.launch_options.port))
