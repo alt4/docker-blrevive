@@ -1,12 +1,12 @@
 # BLRevive Docker Server
 
-<img title="M.A.R.S. API personified, I guess? These Wine builds take ages, man" align="right" height="275" width="330" src="https://gitlab.com/northamp/docker-blrevive/-/raw/master/marsapi.png" >
+<img title="M.A.R.S. doodle. These Wine builds take ages, man" align="right" height="275" width="330" src="https://gitlab.com/northamp/docker-blrevive/-/raw/master/marsapi.png" >
 
 A Docker implementation of the [Blacklight: Retribution Revive](https://gitlab.com/blrevive) server.
 
-Comes with a REST API (named Mars) allowing control over the server's settings and status.
+Comes with a Python launcher script allowing control over the server's settings and status.
 
-**NOTE**: Requires a dual-core processor due to a BL:R warning that cannot be acknowledged on headless instances (yet). While it seems promising, performance wasn't thoroughly evaluated yet. Use at your own risks!
+**NOTE**: Requires a dual-core processor due to a BL:R warning that cannot be acknowledged on headless instances (yet). Also, while it seems promising, performance wasn't thoroughly evaluated yet. Use at your own risks!
 
 ## Usage
 
@@ -44,7 +44,6 @@ Startup server settings can be overriden using the following environment variabl
 | ------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
 | `MARS_DEBUG`              | Set to any value to enable verbose logging                                                                       | ``                                          |
 | `MARS_SERVER_EXE`         | Server executable name mounted to the container, should be located in `/srv/blacklightre/Binaries/Win32/<exe>`   | `FoxGame-win32-Shipping-Patched-Server.exe` |
-| `MARS_SERVER_LISTEN_PORT` | Game UDP listen port. Changing not recommended, consider using a different port binding on the container instead | `7777`                                      |
 | `MARS_GAME_SERVERNAME`    | Server name                                                                                                      | `MARS Managed BLRE Server`                  |
 | `MARS_GAME_MAP`           | Initial Map, will be rotated by playlist. Check the wiki for more informations                                   | `HeloDeck`                                  |
 | `MARS_GAME_GAMEMODE`      | Gamemode, will be rotated by playlist. Check the wiki for more informations                                      | ``                                          |
@@ -53,17 +52,8 @@ Startup server settings can be overriden using the following environment variabl
 | `MARS_GAME_MAXPLAYERS`    | Maximum amount of players allowed                                                                                | ``                                          |
 | `MARS_GAME_TIMELIMIT`     | Time limit for each rounds                                                                                       | ``                                          |
 | `MARS_GAME_SCP`           | Amount of SCP players start with                                                                                 | ``                                          |
-| `MARS_API_LISTEN_IP`      | "Disable" the API if necessary by setting to `127.0.0.1`                                                         | `0.0.0.0`                                   |
-| `MARS_API_LISTEN_PORT`    | API listen port. Changing not recommended, consider using a different port binding on the container instead      | `5000`                                      |
-| `MARS_API_RCON_PASSWORD`  | Password allowing privileged actions such as stopping the server                                                 | ``                                          |
-
-Any `MARS_GAME_*` setting can be changed by the API during runtime. Env vars will *not* be changed to reflect this.
 
 Parameters are listed on [BL:RE's wiki](https://blrevive.gitlab.io/wiki/guides/hosting/game-server/parameters.html#blrevive-parameters).
-
-### Using the API
-
-Refer to [README_API.md](README_API.md)
 
 ## Deployment
 
@@ -83,7 +73,6 @@ services:
       - MARS_GAME_SERVERNAME="And all I got was this lousy dock"
       - MARS_GAME_PLAYLIST="KC"
       - MARS_GAME_NUMBOTS="2"
-      - MARS_API_RCON_PASSWORD="MARSRcon"
 ```
 
 ### Kubernetes
@@ -102,7 +91,6 @@ data:
   MARS_GAME_SERVERNAME: "And all I got was this lousy kube"
   MARS_GAME_PLAYLIST: "KC"
   MARS_GAME_NUMBOTS: "2"
-  MARS_API_RCON_PASSWORD: "MARSRcon"
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -135,9 +123,6 @@ spec:
         - name: game
           containerPort: 7777
           protocol: UDP
-        - name: api
-          containerPort: 5000
-          protocol: TCP
         resources:
           requests:
             memory: "1024M"
@@ -170,68 +155,6 @@ spec:
     protocol: UDP
   selector:
     app: blrevive
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: blrevive-api
-  namespace: blrevive
-  labels:
-    app: blrevive
-spec:
-  ports:
-  - name: api
-    port: 80
-    targetPort: api
-    protocol: TCP
-  selector:
-    app: blrevive
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: blrevive-ingress-insecure
-  namespace: blrevive
-  annotations:
-    kubernetes.io/ingress.class: "traefik"
-spec:
-  rules:
-  - host: blrevive.example.com
-    http:
-      paths:
-      - backend:
-          service:
-            name: blrevive-game
-            port:
-              number: 80
-        path: /
-        pathType: ImplementationSpecific
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: blrevive-ingress
-  namespace: blrevive
-  annotations:
-    kubernetes.io/ingress.class: "traefik"
-    traefik.ingress.kubernetes.io/router.tls: "true"
-    cert-manager.io/cluster-issuer: letsencrypt-prod
-spec:
-  rules:
-  - host: blrevive.example.com
-    http:
-      paths:
-      - backend:
-          service:
-            name: blrevive-game
-            port:
-              number: 80
-        path: /
-        pathType: ImplementationSpecific
-  tls:
-  - hosts:
-    - blrevive.example.com
-    secretName: blrevive-example-com-tls
 ```
 
 ## Credits/Acknowledgements
@@ -242,6 +165,6 @@ Though the CI and imaging processes are now different, they are essentially base
 
 ### MagicCow
 
-Bits of the REST API are either identical or very similar to [MagicCow's MIT licensed Discord bot](https://github.com/MajiKau/BLRE-Server-Info-Discord-Bot).
+Bits of code (and the now defunct attempt at a REST API) are either identical or very similar to [MagicCow's MIT licensed Discord bot](https://github.com/MajiKau/BLRE-Server-Info-Discord-Bot).
 
 Reason not to use that in the image to begin with is the (current) lack of separation between the whole Cheat Engine thing (which isn't quite possible on Wine/Docker), the bot, and the REST API itself. The architecture I have in mind cannot quite fuse all of them in one. I'll most likely strive to maintain interoperability between the two when possible however.
