@@ -51,7 +51,7 @@ class LaunchOptions:
 
     def load_from_dict(self, config: dict):
         self.map = config['map'] or self.map
-        self.port = config['port'] or self.port
+        self.port = config['port']
         self.playlist = config['playlist'] or self.playlist
         self.gamemode = config['gamemode'] or self.gamemode
         self.numbots = config['numbots'] or self.numbots
@@ -63,15 +63,13 @@ class LaunchOptions:
 
 @dataclasses.dataclass
 class ServerOptions:
-    """Contains global server options such as where the game executable is located, which log/PID file will be used, etc...
+    """Contains global server options such as where the game executable is located, what start arguments will be passed, etc...
     Essentially based on MagicCow's own server_structs:
     https://github.com/MajiKau/BLRE-Server-Info-Discord-Bot/blob/master/src/classes/server_structs.py
     """
     launch_options: LaunchOptions = LaunchOptions()
     server_executable: str = "BLR.exe"
     server_executable_path: Path = None
-    pid_file_path: Path = None
-    log_file_path: Path = None
 
     def parse_configuration(self, config: dict):
         server_executable_path = Path("/mnt/blacklightre/Binaries/Win32", config['server']['exe'] or self.server_executable)
@@ -81,8 +79,6 @@ class ServerOptions:
         self.launch_options = LaunchOptions(config['game'])
         self.server_executable=config['server']['exe'] or self.server_executable
         self.server_executable_path=server_executable_path
-        self.pid_file_path=Path('/srv/mars/pid/blrevive-{}.pid'.format(config['server']['port'] or self.launch_options.port))
-        self.log_file_path=Path('/srv/mars/logs/blrevive-{}.log'.format(config['server']['port'] or self.launch_options.port))
 
 
 class BLREHandler():
@@ -104,77 +100,13 @@ class BLREHandler():
 
         self.server_options = ServerOptions()
         self.server_options.parse_configuration(config)
-        self.logger.debug("Will write server's PID to: {}".format(self.server_options.pid_file_path))
-        self.logger.debug("Will output server's stdout to: {}".format(self.server_options.log_file_path))
-
-    def start(self):
-        """Starts a new server process
-        """
-
-        command = ["wine", 
-            self.server_options.server_executable,
-            "server",
-            self.server_options.launch_options.prepare_arguments()
-        ]
-
-        self.serverlog = open(self.server_options.log_file_path, 'w')
-
-        self.logger.debug('Trying to spawn a new server with the following command: {}'.format(command))
-        self.process = subprocess.Popen(command, cwd=self.server_options.server_executable_path.parent, shell=False, stdin=subprocess.DEVNULL, stdout=self.serverlog, stderr=subprocess.STDOUT)
-
-        with open(self.server_options.pid_file_path, 'w') as pidfile:
-            pidfile.write(str(self.process.pid))
-            pidfile.close()
-
-        self.logger.info("Started a new server with PID #{}".format(self.process.pid))
-
-    def stop(self):
-        """Stops the current server, **only if it is currently managed by this object**
-        """
-        try:
-            self.process.terminate()
-            self.logger.info("Sent SIGTERM to the server")
-            self.serverlog.close()
-            self.logger.debug("Closed the current server log file")
-            self.process = None
-            os.remove(self.server_options.pid_file_path)
-        except AttributeError:
-            self.logger.warn("Called the stop function but server isn't started, or process doesn't exist")
-
-    def restart(self):
-        """Restarts the current server.
-        """
-        self.stop()
-        self.start()
-
-    def terminate_pid(self):
-        """Verifies if a process with a PID fitting the server configuration (same port) exists, and kill it
-        Can be used even when the handler isn't managing the process, such as atexit calls
-        """
-        try:
-            with open(self.server_options.pid_file_path, 'r') as pidfile:
-                pid = int(pidfile.read())
-                pidfile.close()
-            self.logger.debug("Trying to terminate process with PID {}".format(pid))
-            try:
-                os.kill(pid, signal.SIGTERM)
-            except ProcessLookupError:
-                self.logger.debug("Seems like the process was closed without cleaning its PID file (likely a crash)")
-            self.logger.debug("Removing PID file")
-            os.remove(self.server_options.pid_file_path)
-        except FileNotFoundError:
-            self.logger.debug("No PID file found, not terminating anything")
-
-        try:
-            self.serverlog.close()
-        except AttributeError:
-            self.logger.debug("No log file handle to close, skipping")
 
     def ensure_alive(self):
         """Polls the subprocess for an eventual exit code, logging it if found
         """
         try:
             if not self.process.poll():
+                self.logger.debug("Server's running.")
                 return True
             else:
                 self.logger.error("Server exited with error code {}".format(self.process.poll()))
@@ -186,10 +118,18 @@ class BLREHandler():
     def run(self):
         """Main loop, just starts the server and checks it at regular intervals
         """
-        self.start()
+        command = ["wine", 
+            self.server_options.server_executable,
+            "server",
+            self.server_options.launch_options.prepare_arguments()
+        ]
+
+        self.logger.debug('Trying to spawn a new server with the following command: {}'.format(command))
+        self.process = subprocess.Popen(command, cwd=self.server_options.server_executable_path.parent, shell=False, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) # FIXME: remove DEVNULLS in favor of logging
+
+        self.logger.info("Started a new server with PID #{}".format(self.process.pid))
 
         while self.ensure_alive():
-            self.logger.debug("Server's running.")
             time.sleep(5)
 
         sys.exit(self.process.poll())
@@ -202,7 +142,6 @@ def parse_env():
     config['debug'] = os.getenv('MARS_DEBUG')
     config['server'] = {}
     config['server']['exe'] = os.getenv('MARS_SERVER_EXE')
-    config['server']['port'] = os.getenv('MARS_SERVER_PORT')
     config['game'] = {}
     config['game']['map'] = os.getenv('MARS_GAME_MAP')
     config['game']['servername'] = os.getenv('MARS_GAME_SERVERNAME')

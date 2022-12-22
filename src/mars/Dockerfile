@@ -46,9 +46,6 @@ COPY ./src/mars/ /srv/mars
 WORKDIR /srv/mars
 RUN pip install -r /srv/mars/requirements.txt
 
-RUN mkdir -p /mnt/blacklightre /srv/mars/logs /srv/mars/pid && \
-    chown blrevive:blrevive -R /srv/mars/logs /srv/mars/pid
-
 USER blrevive
 
 VOLUME /mnt/blacklightre
@@ -56,6 +53,5 @@ VOLUME /mnt/blacklightre
 ENV PATH="/srv/mars/:$PATH"
 
 EXPOSE 7777/udp
-EXPOSE 5000/tcp
 
 ENTRYPOINT ["python3", "launcher.py"]
