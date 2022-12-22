@@ -43,7 +43,7 @@ build-mars:
     - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/src/mars/Dockerfile --destination $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
 
 retag-experimental:
-  stage: deploy
+  stage: publish
   only:
     - /^.*-beta.*$/
   image:
@@ -56,7 +56,7 @@ retag-experimental:
     - crane cp $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME $CI_REGISTRY_IMAGE:experimental
 
 retag-latest:
-  stage: deploy
+  stage: publish
   only:
     - /^.*-release$/
   image:
