@@ -51,7 +51,6 @@ class LaunchOptions:
 
     def load_from_dict(self, config: dict):
         self.map = config['map'] or self.map
-        self.port = config['port']
         self.playlist = config['playlist'] or self.playlist
         self.gamemode = config['gamemode'] or self.gamemode
         self.numbots = config['numbots'] or self.numbots
