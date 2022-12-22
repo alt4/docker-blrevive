@@ -1,19 +1,9 @@
-# M.A.R.S A.P.I.
+# M.A.R.S. Launcher
 
-Some sort of RCON, until we get an "official" master server.
+Previously a web API destined to be some sort of RCON, now downgraded to a simple launcher.
 
-Tested on Werkzeug and Gunicorn.
+Currently written in Python, though a rewrite to a native language such as Go would be very welcome.
 
 ## Quickstart
 
-Either run it with the launcher script as such:
-
-```bash
-python3 launcher.py -a 0.0.0.0 -p 5000
-```
-
-Or, preferably, with Gunicorn:
-
-```bash
-gunicorn -w 1 -b 0.0.0.0:5000 api
-```
+TODO

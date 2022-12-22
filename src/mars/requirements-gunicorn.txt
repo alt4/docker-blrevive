@@ -1,4 +1,0 @@
-Flask
-Flask-HTTPAuth
-xvfbwrapper
-gunicorn

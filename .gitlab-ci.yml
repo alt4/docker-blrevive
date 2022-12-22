@@ -2,7 +2,7 @@ stages:
   # - test # Soon
   - build
   - image
-  - deploy
+  - publish
 
 include:
   - local: "/include/gitlab/wine.yml"
