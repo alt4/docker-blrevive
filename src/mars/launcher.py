@@ -45,7 +45,7 @@ class LaunchOptions:
             maxplayers="?MaxPlayers={}".format(self.maxplayers) if self.maxplayers != 16 else '',
             timelimit="?TimeLimit={}".format(self.timelimit) if self.timelimit else '',
             scp="?SCP={}".format(self.scp) if self.scp else '',
-            servername="?Servername=\"{}\"".format(self.servername)
+            servername='?Servername=\"{}\"'.format(self.servername)
         )
 
     def load_from_dict(self, config: dict):
