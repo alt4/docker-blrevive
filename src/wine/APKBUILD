@@ -1,7 +1,7 @@
 # Maintainer: alt <north4mp@gmail.com>
 pkgname=blrevive-server-wine
 pkgver=7.0
-pkgrel=1
+pkgrel=0
 pkgdesc="Tailored Wine build to run a Blacklight: Retribution Revived dedicated server on Docker Alpine"
 
 # BL:RE is exclusively 32 bits, probably better to build a completely 32 bits pkg
@@ -30,7 +30,6 @@ makedepends="
 	"
 source="https://dl.winehq.org/wine/source/7.0/wine-$pkgver.tar.xz
 	rpath.patch
-	wider-cols-winedbg.patch
 	"
 builddir="$srcdir/wine-$pkgver"
 
@@ -111,7 +110,7 @@ build() {
 		\
 		--disable-tests --disable-notepad --disable-msxml --disable-msxml2 --disable-msxml3 --disable-msxml4 \
 		--disable-msxml6 --disable-msado15 --disable-msdaps --disable-msdasql \
-		--disable-quartz --disable-sapi --disable-wineps_drv --disable-winspool_drv --disable-mp3dmod \
+		--disable-quartz --disable-sapi --disable-wineps_drv --disable-winspool_drv --disable-mp3dmod --disable-winedbg \
 		\
 		--disable-fntcache --disable-fontsub --disable-fusion --disable-fwpuclnt --disable-gameux --disable-gamingtcui --disable-gdiplus --disable-glu32 \
 		--disable-gphoto2_ds --disable-gpkcsp --disable-hal --disable-hlink --disable-hnetcfg --disable-iccvid --disable-icmp --disable-ieframe \
@@ -184,5 +183,4 @@ doc() {
 sha512sums="
 eec17b046ed5447eb540f421c9b2748d9419ce087496c2743a9914fd27bbe5ff9da0cfe47d3cd76fa97323bd1188a1d82b1eef4968d86ed1957dc1a95e28529c  wine-7.0.tar.xz
 d42a367d30b93fe36b8d6418d53f3c931debef2e9b77bc73e22fff04f5f0d7b9e6622beb78592c814beb32ca214fb7e9c019c652fb2612c61358ba162a520b9d  rpath.patch
-43a44abf8c88d8f0a11a3842eec57aa27b0c0107fcdbba59c0aabea0d12a4da5d9c76cbe30b8cc389ae2eb20cdbf9e9775affa336ac9697f18fa8627eda0ad7b  wider-cols-winedbg.patch
 "
