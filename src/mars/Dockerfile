@@ -44,7 +44,8 @@ RUN echo 'partial xkb_symbols "evdev" {};' > /usr/share/X11/xkb/symbols/inet
 # Python preparations
 COPY ./src/mars/ /srv/mars
 WORKDIR /srv/mars
-RUN pip install -r /srv/mars/requirements.txt
+RUN pip install -r /srv/mars/requirements.txt && \
+  mkdir -p /srv/mars/logs/ && chown blrevive: /srv/mars/logs/
 
 USER blrevive
 

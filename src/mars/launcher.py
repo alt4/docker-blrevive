@@ -77,7 +77,7 @@ class ServerOptions:
         self.launch_options = LaunchOptions(config['game'])
         self.server_executable=config['server']['exe'] or self.server_executable
         self.server_executable_path=server_executable_path
-
+        self.log_file_path=Path('/srv/mars/logs/blrevive.log')
 
 class BLREHandler():
     def __init__(self, config):
@@ -98,6 +98,7 @@ class BLREHandler():
 
         self.server_options = ServerOptions()
         self.server_options.parse_configuration(config)
+        self.logger.debug("Will output server's stdout to: {}".format(self.server_options.log_file_path))
 
     def ensure_alive(self):
         """Polls the subprocess for an eventual exit code, logging it if found
@@ -122,8 +123,10 @@ class BLREHandler():
             self.server_options.launch_options.prepare_arguments()
         ]
 
+        self.serverlog = open(self.server_options.log_file_path, 'w')
+
         self.logger.debug('Trying to spawn a new server with the following command: {}'.format(command))
-        self.process = subprocess.Popen(command, cwd=self.server_options.server_executable_path.parent, shell=False, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) # FIXME: remove DEVNULLS in favor of logging
+        self.process = subprocess.Popen(command, cwd=self.server_options.server_executable_path.parent, shell=False, stdin=subprocess.DEVNULL, stdout=self.serverlog, stderr=subprocess.STDOUT)
 
         self.logger.info("Started a new server with PID #{}".format(self.process.pid))
 
