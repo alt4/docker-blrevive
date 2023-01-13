@@ -157,6 +157,233 @@ spec:
     app: blrevive
 ```
 
+### Kubernetes (with server-utils)
+
+Mounting server-utils' configuration requires using an initcontainer if you want to keep the game's volume read-only. 
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: blrevive-config
+  namespace: blrevive
+  labels:
+    app: blrevive
+data:
+  MARS_DEBUG: "True"
+  MARS_SERVER_EXE: "FoxGame-win32-Shipping-Patched-Server.exe"
+  MARS_GAME_SERVERNAME: "And all I got was this lousy kube"
+  MARS_GAME_PLAYLIST: "KC"
+  MARS_GAME_NUMBOTS: "2"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: blrevive-serverutils-config
+  namespace: blrevive
+  labels:
+    app: blrevive
+data:
+  server-utils.config: |
+    {
+        "hacks": {
+            "disableOnMatchIdle": 1
+        },
+        "properties": {
+            "GameForceRespawnTime": 30.0,
+            "GameRespawnTime": 3.0,
+            "GameSpectatorSwitchDelayTime": 120.0,
+            "GoalScore": 3000,
+            "MaxIdleTime": 180.0,
+            "MinRequiredPlayersToStart": 1,
+            "NumEnemyVotesRequiredForKick": 4,
+            "NumFriendlyVotesRequiredForKick": 2,
+            "PlayerSearchTime": 30.0,
+            "RandomBotNames": [
+                "bot",
+                "tob",
+                "49494",
+                "878978",
+                "46464",
+                "56464465",
+                "4565456",
+                "545485",
+                "5454",
+                "4987498",
+                "9787",
+                "1",
+                "12",
+                "11",
+                "910",
+                "78",
+                "56",
+                "34",
+                "12"
+            ],
+            "TimeLimit": 10,
+            "VoteKickBanSeconds": 1200
+        }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blrevive
+  namespace: blrevive
+  labels:
+    app: blrevive
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: blrevive
+  template:
+    metadata:
+      labels:
+        app: blrevive
+    spec:
+      initContainers:
+      - name: server-utils-config
+        image: busybox
+        command: ['/bin/sh', '-c', 'cp /tmp/server_config.json /mnt/server_utils']
+        volumeMounts:
+          - name: blrevive-serverutils-dir
+            mountPath: /mnt/server_utils
+          - name: blrevive-serverutils-config
+            mountPath: /tmp/server_config.json
+            subPath: server_config.json
+      containers:
+      - name: blrevive
+        image: registry.gitlab.com/northamp/docker-blrevive:latest
+        imagePullPolicy: Always
+        envFrom:
+          - configMapRef:
+              name: blrevive-config
+        # Wine debug messages
+        # env:
+        #   - name: WINEDEBUG
+        #     value: "warn+all,+loaddll"
+        ports:
+        - name: game
+          containerPort: 7777
+          protocol: UDP
+        - name: api
+          containerPort: 7778
+          protocol: TCP
+        resources:
+          requests:
+            memory: "1024M"
+            cpu: "0.25"
+          limits:
+            memory: "2048M"
+            cpu: "2"
+        volumeMounts:
+          - mountPath: /mnt/blacklightre/
+            name: blrevive-gamefiles
+            readOnly: true
+          - mountPath: /mnt/blacklightre/FoxGame/Logs
+            name: blrevive-logs
+          - mountPath: /mnt/blacklightre/FoxGame/Config/BLRevive/server_utils
+            name: blrevive-serverutils-dir
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      volumes:
+        - name: blrevive-gamefiles
+          persistentVolumeClaim:
+            claimName: blrevive-pv-claim
+        - name: blrevive-logs
+          emptyDir: {}
+        - name: blrevive-serverutils-dir
+          emptyDir: {}
+        - name: blrevive-serverutils-config
+          configMap:
+            name: blrevive-serverutils-config
+            items: 
+              - key: server-utils.config
+                path: server_config.json
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: blrevive-game
+  namespace: blrevive
+  labels:
+    app: blrevive
+spec:
+  type: LoadBalancer
+  ports:
+  - name: game
+    port: 7777
+    targetPort: game
+    protocol: UDP
+  selector:
+    app: blrevive
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: blrevive-api
+  namespace: blrevive
+  labels:
+    app: blrevive
+spec:
+  ports:
+  - name: api
+    port: 80
+    targetPort: api
+    protocol: TCP
+  selector:
+    app: blrevive
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: blrevive-ingress-insecure
+  namespace: blrevive
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+spec:
+  rules:
+  - host: blrevive.example.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: blrevive-api
+            port:
+              number: 80
+        path: /
+        pathType: ImplementationSpecific
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: blrevive-ingress
+  namespace: blrevive
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  rules:
+  - host: blrevive.example.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: blrevive-api
+            port:
+              number: 80
+        path: /
+        pathType: ImplementationSpecific
+  tls:
+  - hosts:
+    - blrevive.example.com
+    secretName: blrevive-example-com-tls
+```
+
 ## Credits/Acknowledgements
 
 ### Wine build
