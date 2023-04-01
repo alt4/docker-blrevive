@@ -48,7 +48,7 @@ RUN apk add --no-cache gnutls tzdata ca-certificates xvfb
 # silence Xvfb xkbcomp warnings by working around the bug (present in libX11 1.7.2) fixed in libX11 1.8 by https://gitlab.freedesktop.org/xorg/lib/libx11/-/merge_requests/79
 RUN echo 'partial xkb_symbols "evdev" {};' > /usr/share/X11/xkb/symbols/inet
 
-COPY --from=builder /go/src/northamp/docker-blrevive-entrypoint /usr/local/bin/docker-blrevive-entrypoint
+COPY --from=builder /go/src/northamp/docker-blrevive-entrypoint/docker-blrevive-entrypoint /usr/local/bin/docker-blrevive-entrypoint
 
 USER blrevive
 
