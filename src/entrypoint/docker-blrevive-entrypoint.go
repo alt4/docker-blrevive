@@ -48,7 +48,7 @@ func main() {
 
 	log.WithField("options", ServerOptions).Debug("Parsed server options")
 
-	// StartXvfb()
+	StartXvfb()
 
 	StartBlre(ServerOptions)
 
