@@ -15,6 +15,7 @@ import (
 
 type config struct {
 	LogLevel     string `env:"BLREVIVE_LOGLEVEL" envDefault:"info"`
+	Executable   string `env:"BLREVIVE_EXECUTABLE" envDefault:"BLR.exe"`
 	ServerName   string `env:"BLREVIVE_GAME_SERVERNAME" envDefault:"BLREvive Docker Server"`
 	GamePassword string `env:"BLREVIVE_GAME_GAMEPASSWORD,unset"`
 	Map          string `env:"BLREVIVE_GAME_MAP" envDefault:"HeloDeck"`
@@ -50,7 +51,10 @@ func main() {
 
 	StartXvfb()
 
-	StartBlre(ServerOptions)
+	GamePath := "/mnt/blacklightre/Binaries/Win32"
+	ExecutablePath := filepath.Join(GamePath, cfg.Executable)
+
+	StartBlre(ExecutablePath, ServerOptions)
 
 	wg.Wait()
 }
@@ -112,10 +116,7 @@ func StartXvfb() {
 	log.WithField("display", ":9874").Debug("Started xvfb successfully")
 }
 
-func StartBlre(ServerOptions string) {
-	GamePath := "/mnt/blacklightre"
-	GameExecutable := "Binaries/Win32/BLR.exe"
-	ExecutablePath := filepath.Join(GamePath, GameExecutable)
+func StartBlre(ExecutablePath string, ServerOptions string) {
 	GameCmd := exec.Command("wine", ExecutablePath, "server", ServerOptions)
 
 	StartProcessAndScan(GameCmd)
