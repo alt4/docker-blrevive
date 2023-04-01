@@ -1,6 +1,6 @@
-# Wine-related CI process
+# Wine-related jobs
 
-precheck-wine-build:
+precheck wine build:
   stage: build
   image:
     name: alpine:3.15.4
@@ -32,10 +32,10 @@ precheck-wine-build:
     reports:
       dotenv: .env.skip
 
-build-wine:
+build wine:
   stage: build
   needs:
-    - precheck-wine-build
+    - precheck wine build
   image:
     name: alpine:3.15.4
     entrypoint: [""]

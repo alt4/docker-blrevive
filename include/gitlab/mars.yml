@@ -1,6 +1,6 @@
-# M.A.R.S.-related CI process
+# Container-related jobs
 
-fetch-wine-packages:
+fetch wine packages:
   stage: image
   image:
     name: alpine:3.15.4
@@ -26,10 +26,10 @@ fetch-wine-packages:
       - ./pkg
     expire_in: 10 minutes
 
-build-mars:
+build image:
   stage: image
   needs:
-    - fetch-wine-packages
+    - fetch wine packages
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
@@ -40,9 +40,9 @@ build-mars:
     - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
     # Workaround for /var/run mount
     - mv /var /var-orig
-    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/src/mars/Dockerfile --destination $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
 
-retag-experimental:
+retag experimental:
   stage: publish
   only:
     - /^.*-beta.*$/
@@ -55,7 +55,7 @@ retag-experimental:
     - crane auth login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - crane cp $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME $CI_REGISTRY_IMAGE:experimental
 
-retag-latest:
+retag latest:
   stage: publish
   only:
     - /^.*-release$/
