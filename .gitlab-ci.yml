@@ -1,9 +1,10 @@
 stages:
-  # - test # Soon
+  - test
   - build
   - image
   - publish
 
 include:
-  - local: "/include/gitlab/wine.yml"
-  - local: "/include/gitlab/mars.yml"
+  - local: ".gitlab/entrypoint.yml"
+  - local: ".gitlab/wine.yml"
+  - local: ".gitlab/image.yml"
