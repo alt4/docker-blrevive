@@ -1,5 +1,6 @@
 # BLRevive Docker Server
 
+<!-- markdownlint-disable-next-line MD033 -->
 <img title="M.A.R.S. doodle. These Wine builds take ages, man" align="right" height="275" width="330" src="https://gitlab.com/northamp/docker-blrevive/-/raw/master/marsapi.png" >
 
 A Docker implementation of the [Blacklight: Retribution Revive](https://gitlab.com/blrevive) server.
