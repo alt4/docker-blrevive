@@ -46,6 +46,7 @@ Startup server settings can be overriden using the following environment variabl
 | Name                       | Description                                                                    | Default                  |
 | -------------------------- | ------------------------------------------------------------------------------ | ------------------------ |
 | `BLREVIVE_LOGLEVEL`        | Set to `debug` or `trace` for more logs from the entrypoint                    | `info`                   |
+| `BLREVIVE_EXECUTABLE`      | Patched executable name                                                        | `BLR.exe`                |
 | `BLREVIVE_GAME_SERVERNAME` | Server name                                                                    | `BLREvive Docker Server` |
 | `BLREVIVE_GAME_Password`   | Password clients should provide to enter                                       | ``                       |
 | `BLREVIVE_GAME_MAP`        | Initial Map, will be rotated by playlist. Check the wiki for more informations | `HeloDeck`               |
