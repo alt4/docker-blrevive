@@ -17,6 +17,8 @@ test entrypoint:
 
 build entrypoint:
   stage: build
+  needs:
+    - test entrypoint
   image: golang:1.20.2-alpine3.17
   script:
     - cd src/entrypoint/
