@@ -74,7 +74,9 @@ func DetermineServerOptions(cfg config) string {
 	var ServerOptionsArray []string
 
 	ServerOptionsArray = append(ServerOptionsArray, cfg.Map)
-	ServerOptionsArray = append(ServerOptionsArray, fmt.Sprintf("?Servername=%s", cfg.ServerName))
+	// Wine seemingly adds backslashes to argument's quotes (they are not there in ps axuf output but the server binary do get it)
+	// To say this is annoying would be an understatement
+	ServerOptionsArray = append(ServerOptionsArray, fmt.Sprintf("?Servername=%s", strings.ReplaceAll(cfg.ServerName, " ", "_")))
 	if cfg.GamePassword != "" {
 		ServerOptionsArray = append(ServerOptionsArray, fmt.Sprintf("?GamePassword=%s", cfg.GamePassword))
 	}
