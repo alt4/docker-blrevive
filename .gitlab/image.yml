@@ -30,6 +30,7 @@ build image:
   stage: image
   needs:
     - fetch wine packages
+    - build entrypoint
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
@@ -40,7 +41,7 @@ build image:
     - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
     # Workaround for /var/run mount
     - mv /var /var-orig
-    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/.gitlab/Dockerfile-ci --destination $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
 
 retag experimental:
   stage: publish

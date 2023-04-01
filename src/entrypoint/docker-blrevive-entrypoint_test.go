@@ -41,7 +41,7 @@ var ServerOptionsTests = []ServerOptions{
 			ServerName: "BLREvive Docker Server",
 			Map:        "HeloDeck",
 		},
-		ExpectedString: "HeloDeck?Servername=BLREvive Docker Server",
+		ExpectedString: "HeloDeck?Servername=BLREvive_Docker_Server",
 	},
 	{
 		Configuration: config{
@@ -55,7 +55,7 @@ var ServerOptionsTests = []ServerOptions{
 			TimeLimit:    "300",
 			SCP:          "400",
 		},
-		ExpectedString: "HeloDeck?Servername=a server?GamePassword=password?Playlist=KC?Game=FoxGame.FoxGameMP_KC?NumBots=3?MaxPlayers=8?TimeLimit=300?SCP=400",
+		ExpectedString: "HeloDeck?Servername=a_server?GamePassword=password?Playlist=KC?Game=FoxGame.FoxGameMP_KC?NumBots=3?MaxPlayers=8?TimeLimit=300?SCP=400",
 	},
 }
 
