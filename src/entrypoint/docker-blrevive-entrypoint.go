@@ -48,7 +48,7 @@ func main() {
 
 	log.WithField("options", ServerOptions).Debug("Parsed server options")
 
-	StartXvfb()
+	// StartXvfb()
 
 	StartBlre(ServerOptions)
 
@@ -74,7 +74,13 @@ func DetermineServerOptions(cfg config) string {
 	var ServerOptionsArray []string
 
 	ServerOptionsArray = append(ServerOptionsArray, cfg.Map)
-	ServerOptionsArray = append(ServerOptionsArray, fmt.Sprintf(`?Servername="%s"`, cfg.ServerName))
+	for i, word := range strings.Split(cfg.ServerName, " ") {
+		if i == 0 {
+			ServerOptionsArray = append(ServerOptionsArray, fmt.Sprintf("?Servername=%s", word))
+		} else {
+			ServerOptionsArray = append(ServerOptionsArray, " "+word)
+		}
+	}
 	if cfg.GamePassword != "" {
 		ServerOptionsArray = append(ServerOptionsArray, fmt.Sprintf("?GamePassword=%s", cfg.GamePassword))
 	}
