@@ -102,7 +102,7 @@ func DetermineServerOptions(cfg config) string {
 
 func StartXvfb() {
 	// Would be nice to use -displayfd instead of an arbitrary display number I suppose
-	XvfbCmd := exec.Command("xvfb", ":9874", "-screen", "0", "1024x768x16")
+	XvfbCmd := exec.Command("Xvfb", ":9874", "-screen", "0", "1024x768x16")
 
 	StartProcessAndScan(XvfbCmd)
 
