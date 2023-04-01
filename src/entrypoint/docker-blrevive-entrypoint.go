@@ -74,13 +74,7 @@ func DetermineServerOptions(cfg config) string {
 	var ServerOptionsArray []string
 
 	ServerOptionsArray = append(ServerOptionsArray, cfg.Map)
-	for i, word := range strings.Split(cfg.ServerName, " ") {
-		if i == 0 {
-			ServerOptionsArray = append(ServerOptionsArray, fmt.Sprintf("?Servername=%s", word))
-		} else {
-			ServerOptionsArray = append(ServerOptionsArray, " "+word)
-		}
-	}
+	ServerOptionsArray = append(ServerOptionsArray, fmt.Sprintf(`?Servername="%s"`, cfg.ServerName))
 	if cfg.GamePassword != "" {
 		ServerOptionsArray = append(ServerOptionsArray, fmt.Sprintf("?GamePassword=%s", cfg.GamePassword))
 	}
