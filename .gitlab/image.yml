@@ -2,6 +2,8 @@
 
 fetch wine packages:
   stage: image
+  needs:
+    - build wine
   image:
     name: alpine:3.15.4
   script:
