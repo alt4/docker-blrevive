@@ -5,7 +5,7 @@
 
 A Docker implementation of the [Blacklight: Retribution Revive](https://gitlab.com/blrevive) server.
 
-Comes with a Python launcher script allowing control over the server's settings and status.
+Comes with a Golang launcher script allowing control over the server's settings and status.
 
 **NOTE**: Requires a dual-core processor due to a BL:R warning that cannot be acknowledged on headless instances (yet). Also, while it seems promising, performance wasn't thoroughly evaluated yet. Use at your own risks!
 
@@ -23,21 +23,22 @@ Downloading Blacklight can be done entirely on Docker using DepotDownloader.
 
 The only pre-requisite is a Steam account that can download BLR:
 
+**NOTE**: The [filelist](https://gitlab.com/-/snippets/2529720/raw/main/filelist.txt) is used to prevent downloading `.tfc` files and save nearly 4GB of space. Comment the curl command and the `-filelist` argument if you intend to run a client.
+
 ```bash
 STEAM_USERNAME=YOU!
 docker run -it -v /srv/blacklightre/:/mnt/blacklightre/ mcr.microsoft.com/dotnet/sdk:6.0 bash -c "apt-get update \
   && apt-get install -y unzip \
   && curl -L -O https://github.com/SteamRE/DepotDownloader/releases/download/DepotDownloader_2.4.7/depotdownloader-2.4.7.zip \
   && unzip depotdownloader-2.4.7.zip \
-  && dotnet DepotDownloader.dll -app 209870 -username $STEAM_USERNAME \
+  && curl -LO https://gitlab.com/-/snippets/2529720/raw/main/filelist.txt \
+  && dotnet DepotDownloader.dll -app 209870 -username $STEAM_USERNAME -filelist filelist.txt \
   && mv depots/209871/2520205/ /mnt/blacklightre/"
 ```
 
 Applying BL:RE's patch is going to be more finicky: current launcher releases do not support CLI patching properly.
 
 Your best bet is patching the game manually elsewhere and copying the binaries to `/srv/blacklightre/Binaries/Win32`.
-
-**NOTE**: It seems safe to delete every `.tfc` files in `FoxGame/CookedPCConsole` to save nearly 4GB of space. It should also be possible to tweak SteamRE to download all files except those, stay tunned.
 
 ### Server settings
 
@@ -48,7 +49,7 @@ Startup server settings can be overriden using the following environment variabl
 | `BLREVIVE_LOGLEVEL`        | Set to `debug` or `trace` for more logs from the entrypoint                    | `info`                   |
 | `BLREVIVE_EXECUTABLE`      | Patched executable name                                                        | `BLR.exe`                |
 | `BLREVIVE_GAME_SERVERNAME` | Server name                                                                    | `BLREvive Docker Server` |
-| `BLREVIVE_GAME_Password`   | Password clients should provide to enter                                       | ``                       |
+| `BLREVIVE_GAME_PASSWORD`   | Password clients should provide to enter                                       | ``                       |
 | `BLREVIVE_GAME_MAP`        | Initial Map, will be rotated by playlist. Check the wiki for more informations | `HeloDeck`               |
 | `BLREVIVE_GAME_GAMEMODE`   | Gamemode, will be rotated by playlist. Check the wiki for more informations    | ``                       |
 | `BLREVIVE_GAME_PLAYLIST`   | Server playlist                                                                | ``                       |
@@ -161,7 +162,7 @@ spec:
 
 ### Kubernetes (with server-utils)
 
-Mounting server-utils' configuration requires using an initcontainer if you want to keep the game's volume read-only. 
+Mounting server-utils' configuration requires using an initcontainer if you want to keep the game's volume read-only.
 
 ```yaml
 apiVersion: v1
