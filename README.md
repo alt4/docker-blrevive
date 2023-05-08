@@ -7,14 +7,14 @@ A Docker implementation of the [Blacklight: Retribution Revive](https://gitlab.c
 
 Comes with a Golang launcher script allowing control over the server's settings and status.
 
-**NOTE**: Requires a dual-core processor due to a BL:R warning that cannot be acknowledged on headless instances (yet). Also, while it seems promising, performance wasn't thoroughly evaluated yet. Use at your own risks!
+**NOTE**: Requires a dual-core processor due to a BL:R warning that cannot be acknowledged on headless instances (yet). Use at your own risks!
 
 ## Usage
 
 The game's files need to be mounted to `/mnt/blacklightre/`. Rest of the `README` will assume they're located on the host's `/srv/blacklightre`.
 
 ```bash
-docker run --rm -v /srv/blacklightre/:/mnt/blacklightre --env BLREVIVE_GAME_NUMBOTS=2 -p 5000:5000 -p 7777:7777/udp registry.gitlab.com/northamp/docker-blrevive:latest
+docker run --rm -v /srv/blacklightre/:/mnt/blacklightre --env BLREVIVE_GAME_NUMBOTS=2 -p 7777:7777/udp registry.gitlab.com/northamp/docker-blrevive:latest
 ```
 
 ### Downloading the game
@@ -33,12 +33,12 @@ docker run -it -v /srv/blacklightre/:/mnt/blacklightre/ mcr.microsoft.com/dotnet
   && unzip depotdownloader-2.4.7.zip \
   && curl -LO https://gitlab.com/-/snippets/2529720/raw/main/filelist.txt \
   && dotnet DepotDownloader.dll -app 209870 -username $STEAM_USERNAME -filelist filelist.txt \
-  && mv depots/209871/2520205/ /mnt/blacklightre/"
+  && mv depots/209871/2520205/* /mnt/blacklightre/"
 ```
 
 Applying BL:RE's patch is going to be more finicky: current launcher releases do not support CLI patching properly.
 
-Your best bet is patching the game manually elsewhere and copying the binaries to `/srv/blacklightre/Binaries/Win32`.
+Your best bet is patching the game manually elsewhere and copying the binaries to `/srv/blacklightre/Binaries/Win32`. You'll likely need the patched executable (i.e. `FoxGame-win32-Shipping-Patched.exe`) and the Proxy DLL (`Proxy.dll` or `BLRevive.dll`).
 
 ### Server settings
 
@@ -71,12 +71,20 @@ version: '3'
 services:
   blrevive:
     image: registry.gitlab.com/northamp/docker-blrevive:latest
+    container_name: blrevive
     restart: always
     environment:
-      - BLREVIVE_DEBUG="debug"
-      - BLREVIVE_GAME_SERVERNAME="And all I got was this lousy dock"
-      - BLREVIVE_GAME_PLAYLIST="KC"
-      - BLREVIVE_GAME_NUMBOTS="2"
+      - BLREVIVE_DEBUG=debug
+      - BLREVIVE_EXECUTABLE=PatchedBLR.exe
+      - BLREVIVE_GAME_SERVERNAME=And all I got was this lousy dock
+      - BLREVIVE_GAME_PLAYLIST=KC
+      - BLREVIVE_GAME_NUMBOTS=2
+    volumes:
+      - /srv/blacklightre:/mnt/blacklightre
+    ports:
+      - 7777:7777/udp
+      # default Proxy endpoint, uncomment if using i.e. server-utils
+      # - 7778:7778
 ```
 
 ### Kubernetes
@@ -90,7 +98,7 @@ metadata:
   labels:
     app: blrevive
 data:
-  BLREVIVE_DEBUG: "debug"
+  BLREVIVE_LOGLEVEL: "debug"
   BLREVIVE_GAME_SERVERNAME: "And all I got was this lousy kube"
   BLREVIVE_GAME_PLAYLIST: "KC"
   BLREVIVE_GAME_NUMBOTS: "2"
@@ -173,11 +181,11 @@ metadata:
   labels:
     app: blrevive
 data:
-  MARS_DEBUG: "True"
-  MARS_SERVER_EXE: "FoxGame-win32-Shipping-Patched-Server.exe"
-  MARS_GAME_SERVERNAME: "And all I got was this lousy kube"
-  MARS_GAME_PLAYLIST: "KC"
-  MARS_GAME_NUMBOTS: "2"
+  BLREVIVE_LOGLEVEL: "True"
+  BLREVIVE_EXECUTABLE: "FoxGame-win32-Shipping-Patched-Server.exe"
+  BLREVIVE_GAME_SERVERNAME: "And all I got was this lousy kube"
+  BLREVIVE_GAME_PLAYLIST: "KC"
+  BLREVIVE_GAME_NUMBOTS: "2"
 ---
 apiVersion: v1
 kind: ConfigMap
