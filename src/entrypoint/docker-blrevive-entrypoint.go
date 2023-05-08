@@ -107,13 +107,30 @@ func DetermineServerOptions(cfg config) string {
 }
 
 func StartXvfb() {
-	// Would be nice to use -displayfd instead of an arbitrary display number I suppose
+	// Very hack-y statement to free the Xvfb lock if the container was restarted before Xvfb freed it
+	err := os.Remove("/tmp/.X9874-lock")
+	if err != nil {
+		log.WithField("display", ":9874").Trace("No Xvfb lock file to report")
+	} else {
+		log.WithField("display", ":9874").Warn("Had to remove a Xvfb lock file")
+	}
+	// Would be nice to use -displayfd instead of an arbitrary display number I suppose:
 	XvfbCmd := exec.Command("Xvfb", ":9874", "-screen", "0", "1024x768x16")
+
+	// Would be something like:
+	// f, err := os.OpenFile("/tmp/xvfb", os.O_RDWR|os.O_CREATE, 0755)
+	// if err != nil {
+	// 		log.Fatal(err)
+	// }
+	// XvfbCmd := exec.Command("Xvfb", "-displayfd", "3", "-screen", "0", "1024x768x16")
+	// XvfbCmd.ExtraFiles = []*os.File{f}
+
+	// Matter is that it removes reliance on /tmp/.X9874-lock to rely on /tmp/xvfb instead... Not quite optimal.
 
 	StartProcessAndScan(XvfbCmd)
 
 	os.Setenv("DISPLAY", ":9874")
-	log.WithField("display", ":9874").Debug("Started xvfb successfully")
+	log.WithField("display", ":9874").Debug("Started Xvfb successfully")
 }
 
 func StartBlre(ExecutablePath string, ServerOptions string) {
