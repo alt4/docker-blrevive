@@ -44,19 +44,20 @@ Your best bet is patching the game manually elsewhere and copying the binaries t
 
 Startup server settings can be overriden using the following environment variables:
 
-| Name                       | Description                                                                    | Default                  |
-| -------------------------- | ------------------------------------------------------------------------------ | ------------------------ |
-| `BLREVIVE_LOGLEVEL`        | Set to `debug` or `trace` for more logs from the entrypoint                    | `info`                   |
-| `BLREVIVE_EXECUTABLE`      | Patched executable name                                                        | `BLR.exe`                |
-| `BLREVIVE_GAME_SERVERNAME` | Server name                                                                    | `BLREvive Docker Server` |
-| `BLREVIVE_GAME_PASSWORD`   | Password clients should provide to enter                                       | ``                       |
-| `BLREVIVE_GAME_MAP`        | Initial Map, will be rotated by playlist. Check the wiki for more informations | `HeloDeck`               |
-| `BLREVIVE_GAME_GAMEMODE`   | Gamemode, will be rotated by playlist. Check the wiki for more informations    | ``                       |
-| `BLREVIVE_GAME_PLAYLIST`   | Server playlist                                                                | ``                       |
-| `BLREVIVE_GAME_NUMBOTS`    | Number of bots                                                                 | ``                       |
-| `BLREVIVE_GAME_MAXPLAYERS` | Maximum amount of players allowed                                              | ``                       |
-| `BLREVIVE_GAME_TIMELIMIT`  | Time limit for each rounds                                                     | ``                       |
-| `BLREVIVE_GAME_SCP`        | Amount of SCP players start with                                               | ``                       |
+| Name                       | Description                                                                                                                                                                                                            | Default                  |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
+| `WINEDEBUG`                | **IMPORTANT**: Wine's debug channel configuration, muted by default since it's mostly useless bloat when the server's running. It's recommended to set the variable to `+all,+loaddll` when you're settings things up. | `-all`                   |
+| `BLREVIVE_LOGLEVEL`        | Set to `debug` or `trace` for more logs from the entrypoint                                                                                                                                                            | `info`                   |
+| `BLREVIVE_EXECUTABLE`      | Patched executable name                                                                                                                                                                                                | `BLR.exe`                |
+| `BLREVIVE_GAME_SERVERNAME` | Server name                                                                                                                                                                                                            | `BLREvive Docker Server` |
+| `BLREVIVE_GAME_PASSWORD`   | Password clients should provide to enter                                                                                                                                                                               | ``                       |
+| `BLREVIVE_GAME_MAP`        | Initial Map, will be rotated by playlist. Check the wiki for more informations                                                                                                                                         | `HeloDeck`               |
+| `BLREVIVE_GAME_GAMEMODE`   | Gamemode, will be rotated by playlist. Check the wiki for more informations                                                                                                                                            | ``                       |
+| `BLREVIVE_GAME_PLAYLIST`   | Server playlist                                                                                                                                                                                                        | ``                       |
+| `BLREVIVE_GAME_NUMBOTS`    | Number of bots                                                                                                                                                                                                         | ``                       |
+| `BLREVIVE_GAME_MAXPLAYERS` | Maximum amount of players allowed                                                                                                                                                                                      | ``                       |
+| `BLREVIVE_GAME_TIMELIMIT`  | Time limit for each rounds                                                                                                                                                                                             | ``                       |
+| `BLREVIVE_GAME_SCP`        | Amount of SCP players start with                                                                                                                                                                                       | ``                       |
 
 Parameters are listed on [BL:RE's wiki](https://blrevive.gitlab.io/wiki/guides/hosting/game-server/parameters.html#blrevive-parameters).
 

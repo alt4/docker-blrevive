@@ -19,27 +19,7 @@ USER blrevive
 
 ENV WINEDEBUG=-d3d
 ENV WINEPREFIX="/blrevive/.wine"
-RUN WINEDLLOVERRIDES="mscoree,mshtml=,winemenubuilder.exe" wineboot --init && \
-    for x in \
-        /home/blrevive/.wine/drive_c/"Program Files"/"Common Files"/System/*/* \
-        /home/blrevive/.wine/drive_c/windows/* \
-        /home/blrevive/.wine/drive_c/windows/system32/* \
-        /home/blrevive/.wine/drive_c/windows/system32/drivers/* \
-        /home/blrevive/.wine/drive_c/windows/system32/wbem/* \
-        /home/blrevive/.wine/drive_c/windows/system32/spool/drivers/x64/*/* \
-        /home/blrevive/.wine/drive_c/windows/system32/Speech/common/* \
-        /home/blrevive/.wine/drive_c/windows/winsxs/*/* \
-    ; do \
-        orig="/usr/lib/wine/i386-windows/$(basename "$x")"; \
-        if cmp -s "$orig" "$x"; then ln -sf "$orig" "$x"; fi; \
-    done && \
-    for x in \
-        /home/blrevive/.wine/drive_c/windows/globalization/sorting/*.nls \
-        /home/blrevive/.wine/drive_c/windows/system32/*.nls \
-    ; do \
-        orig="/usr/share/wine/nls/$(basename "$x")"; \
-        if cmp -s "$orig" "$x"; then ln -sf "$orig" "$x"; fi; \
-    done
+RUN WINEDLLOVERRIDES="mscoree,mshtml=,winemenubuilder.exe" wineboot --init
 
 USER root
 
@@ -55,5 +35,7 @@ USER blrevive
 VOLUME /mnt/blacklightre
 
 EXPOSE 7777/udp
+
+ENV WINEDEBUG=-all,-d3d
 
 CMD ["docker-blrevive"]
