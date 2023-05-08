@@ -14,7 +14,7 @@ Comes with a Golang launcher script allowing control over the server's settings 
 The game's files need to be mounted to `/mnt/blacklightre/`. Rest of the `README` will assume they're located on the host's `/srv/blacklightre`.
 
 ```bash
-docker run --rm -v /srv/blacklightre/:/mnt/blacklightre --env BLREVIVE_GAME_NUMBOTS=2 -p 5000:5000 -p 7777:7777/udp registry.gitlab.com/northamp/docker-blrevive:latest
+docker run --rm -v /srv/blacklightre/:/mnt/blacklightre --env BLREVIVE_GAME_NUMBOTS=2 -p 7777:7777/udp registry.gitlab.com/northamp/docker-blrevive:latest
 ```
 
 ### Downloading the game
@@ -83,7 +83,8 @@ services:
       - /srv/blacklightre:/mnt/blacklightre
     ports:
       - 7777:7777/udp
-      - 7778:7778
+      # default Proxy endpoint, uncomment if using i.e. server-utils
+      # - 7778:7778
 ```
 
 ### Kubernetes
