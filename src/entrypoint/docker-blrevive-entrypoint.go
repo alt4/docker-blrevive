@@ -114,8 +114,18 @@ func StartXvfb() {
 	} else {
 		log.WithField("display", ":9874").Warn("Had to remove a Xvfb lock file")
 	}
-	// Would be nice to use -displayfd instead of an arbitrary display number I suppose
+	// Would be nice to use -displayfd instead of an arbitrary display number I suppose:
 	XvfbCmd := exec.Command("Xvfb", ":9874", "-screen", "0", "1024x768x16")
+
+	// Would be something like:
+	// f, err := os.OpenFile("/tmp/xvfb", os.O_RDWR|os.O_CREATE, 0755)
+	// if err != nil {
+	// 		log.Fatal(err)
+	// }
+	// XvfbCmd := exec.Command("Xvfb", "-displayfd", "3", "-screen", "0", "1024x768x16")
+	// XvfbCmd.ExtraFiles = []*os.File{f}
+
+	// Matter is that it removes reliance on /tmp/.X9874-lock to rely on /tmp/xvfb instead... Not quite optimal.
 
 	StartProcessAndScan(XvfbCmd)
 
