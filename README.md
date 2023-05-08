@@ -7,7 +7,7 @@ A Docker implementation of the [Blacklight: Retribution Revive](https://gitlab.c
 
 Comes with a Golang launcher script allowing control over the server's settings and status.
 
-**NOTE**: Requires a dual-core processor due to a BL:R warning that cannot be acknowledged on headless instances (yet). Also, while it seems promising, performance wasn't thoroughly evaluated yet. Use at your own risks!
+**NOTE**: Requires a dual-core processor due to a BL:R warning that cannot be acknowledged on headless instances (yet). Use at your own risks!
 
 ## Usage
 
@@ -33,12 +33,12 @@ docker run -it -v /srv/blacklightre/:/mnt/blacklightre/ mcr.microsoft.com/dotnet
   && unzip depotdownloader-2.4.7.zip \
   && curl -LO https://gitlab.com/-/snippets/2529720/raw/main/filelist.txt \
   && dotnet DepotDownloader.dll -app 209870 -username $STEAM_USERNAME -filelist filelist.txt \
-  && mv depots/209871/2520205/ /mnt/blacklightre/"
+  && mv depots/209871/2520205/* /mnt/blacklightre/"
 ```
 
 Applying BL:RE's patch is going to be more finicky: current launcher releases do not support CLI patching properly.
 
-Your best bet is patching the game manually elsewhere and copying the binaries to `/srv/blacklightre/Binaries/Win32`.
+Your best bet is patching the game manually elsewhere and copying the binaries to `/srv/blacklightre/Binaries/Win32`. You'll likely need the patched executable (i.e. `FoxGame-win32-Shipping-Patched.exe`) and the Proxy DLL (`Proxy.dll` or `BLRevive.dll`).
 
 ### Server settings
 
