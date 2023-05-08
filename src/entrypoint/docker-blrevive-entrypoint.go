@@ -107,13 +107,20 @@ func DetermineServerOptions(cfg config) string {
 }
 
 func StartXvfb() {
+	// Very hack-y statement to free the Xvfb lock if the container was restarted before Xvfb freed it
+	err := os.Remove("/mnt/.X9874-lock")
+	if err != nil {
+		log.WithField("display", ":9874").Trace("No Xvfb lock file to report")
+	} else {
+		log.WithField("display", ":9874").Warn("Had to remove a Xvfb lock file")
+	}
 	// Would be nice to use -displayfd instead of an arbitrary display number I suppose
 	XvfbCmd := exec.Command("Xvfb", ":9874", "-screen", "0", "1024x768x16")
 
 	StartProcessAndScan(XvfbCmd)
 
 	os.Setenv("DISPLAY", ":9874")
-	log.WithField("display", ":9874").Debug("Started xvfb successfully")
+	log.WithField("display", ":9874").Debug("Started Xvfb successfully")
 }
 
 func StartBlre(ExecutablePath string, ServerOptions string) {
