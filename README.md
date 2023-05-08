@@ -71,12 +71,19 @@ version: '3'
 services:
   blrevive:
     image: registry.gitlab.com/northamp/docker-blrevive:latest
+    container_name: blrevive
     restart: always
     environment:
-      - BLREVIVE_DEBUG="debug"
-      - BLREVIVE_GAME_SERVERNAME="And all I got was this lousy dock"
-      - BLREVIVE_GAME_PLAYLIST="KC"
-      - BLREVIVE_GAME_NUMBOTS="2"
+      - BLREVIVE_DEBUG=debug
+      - BLREVIVE_EXECUTABLE=PatchedBLR.exe
+      - BLREVIVE_GAME_SERVERNAME=And all I got was this lousy dock
+      - BLREVIVE_GAME_PLAYLIST=KC
+      - BLREVIVE_GAME_NUMBOTS=2
+    volumes:
+      - /srv/blacklightre:/mnt/blacklightre
+    ports:
+      - 7777:7777/udp
+      - 7778:7778
 ```
 
 ### Kubernetes
@@ -90,7 +97,7 @@ metadata:
   labels:
     app: blrevive
 data:
-  BLREVIVE_DEBUG: "debug"
+  BLREVIVE_LOGLEVEL: "debug"
   BLREVIVE_GAME_SERVERNAME: "And all I got was this lousy kube"
   BLREVIVE_GAME_PLAYLIST: "KC"
   BLREVIVE_GAME_NUMBOTS: "2"
@@ -173,11 +180,11 @@ metadata:
   labels:
     app: blrevive
 data:
-  MARS_DEBUG: "True"
-  MARS_SERVER_EXE: "FoxGame-win32-Shipping-Patched-Server.exe"
-  MARS_GAME_SERVERNAME: "And all I got was this lousy kube"
-  MARS_GAME_PLAYLIST: "KC"
-  MARS_GAME_NUMBOTS: "2"
+  BLREVIVE_LOGLEVEL: "True"
+  BLREVIVE_EXECUTABLE: "FoxGame-win32-Shipping-Patched-Server.exe"
+  BLREVIVE_GAME_SERVERNAME: "And all I got was this lousy kube"
+  BLREVIVE_GAME_PLAYLIST: "KC"
+  BLREVIVE_GAME_NUMBOTS: "2"
 ---
 apiVersion: v1
 kind: ConfigMap
