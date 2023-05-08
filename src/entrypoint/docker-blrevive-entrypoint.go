@@ -108,7 +108,7 @@ func DetermineServerOptions(cfg config) string {
 
 func StartXvfb() {
 	// Very hack-y statement to free the Xvfb lock if the container was restarted before Xvfb freed it
-	err := os.Remove("/mnt/.X9874-lock")
+	err := os.Remove("/tmp/.X9874-lock")
 	if err != nil {
 		log.WithField("display", ":9874").Trace("No Xvfb lock file to report")
 	} else {
