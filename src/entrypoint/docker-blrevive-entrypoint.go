@@ -10,6 +10,8 @@ import (
 	"sync"
 
 	"github.com/caarlos0/env/v7"
+	"github.com/fsnotify/fsnotify"
+	"github.com/nxadm/tail"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -51,11 +53,15 @@ func main() {
 
 	StartXvfb()
 
-	GamePath := "/mnt/blacklightre/Binaries/Win32"
-	ExecutablePath := filepath.Join(GamePath, cfg.Executable)
+	GamePath := "/mnt/blacklightre"
+	ExecutablePath := filepath.Join(GamePath, "Binaries/Win32", cfg.Executable)
 
 	StartBlre(ExecutablePath, ServerOptions)
 
+	wg.Add(1)
+	go HandleLogs(GamePath)
+
+	// Wait til routines are done running
 	wg.Wait()
 }
 
@@ -106,6 +112,7 @@ func DetermineServerOptions(cfg config) string {
 	return strings.Join(ServerOptionsArray, "")
 }
 
+// Start xvfb
 func StartXvfb() {
 	// Very hack-y statement to free the Xvfb lock if the container was restarted before Xvfb freed it
 	err := os.Remove("/tmp/.X9874-lock")
@@ -133,12 +140,14 @@ func StartXvfb() {
 	log.WithField("display", ":9874").Debug("Started Xvfb successfully")
 }
 
+// Start the game
 func StartBlre(ExecutablePath string, ServerOptions string) {
 	GameCmd := exec.Command("wine", ExecutablePath, "server", ServerOptions)
 
 	StartProcessAndScan(GameCmd)
 }
 
+// Spawn a new process and pipe its stdout/stderr to the entrypoint's logs
 func StartProcessAndScan(Cmd *exec.Cmd) {
 	ProcessName := filepath.Base(Cmd.Path)
 	stdout, err := Cmd.StdoutPipe()
@@ -173,11 +182,80 @@ func StartProcessAndScan(Cmd *exec.Cmd) {
 		wg.Done()
 	}()
 
+	wg.Add(1)
 	go func() {
 		Cmd.Wait()
 		log.WithFields(log.Fields{
 			"process":  ProcessName,
 			"exitcode": Cmd.ProcessState.ExitCode(),
 		}).Fatal("Subprocess died! Aborting...")
+		wg.Done()
 	}()
+}
+
+// Watch for new files in the predetermined log folder and output them through the entrypoint's log
+func HandleLogs(GamePath string) {
+	defer wg.Done()
+
+	// Create fsnotify watcher
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		log.WithField("process", "entrypoint").Error(err)
+	}
+	defer watcher.Close()
+
+	logPath := filepath.Join(GamePath, "FoxGame/Logs")
+
+	done := make(chan bool)
+
+	log.WithField("logpath", logPath).Debug("Starting watch over the Logs folder")
+
+	wg.Add(1)
+	go func() {
+	watchloop:
+		for {
+			select {
+			case event := <-watcher.Events:
+				log.WithFields(log.Fields{
+					"logpath": logPath,
+					"event":   event,
+				}).Trace("New fsnotify event in log folder")
+
+				if event.Op == fsnotify.Create {
+					log.WithFields(log.Fields{
+						"process": "entrypoint",
+						"logfile": filepath.Base(event.Name),
+					}).Info("A new file was created in the log folder")
+					wg.Add(1)
+					go TailLogToStdout(event.Name)
+				}
+
+			case err := <-watcher.Errors:
+				log.WithField("process", "entrypoint").Error(err)
+				break watchloop
+			}
+		}
+		wg.Done()
+	}()
+
+	if err := watcher.Add(logPath); err != nil {
+		log.WithField("process", "entrypoint").Error(err)
+	}
+
+	<-done
+}
+
+func TailLogToStdout(LogFile string) {
+	defer wg.Done()
+
+	t, err := tail.TailFile(
+		LogFile, tail.Config{Follow: true, ReOpen: true, MustExist: true})
+	if err != nil {
+		log.WithField("logfile", filepath.Base(LogFile)).Error(err)
+		return
+	}
+
+	for line := range t.Lines {
+		log.WithField("logfile", filepath.Base(LogFile)).Info(line.Text)
+	}
 }
