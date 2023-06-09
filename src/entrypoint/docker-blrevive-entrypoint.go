@@ -208,6 +208,8 @@ func HandleLogs(GamePath string) {
 
 	done := make(chan bool)
 
+	log.WithField("logpath", logPath).Debug("Starting watch over the Logs folder")
+
 	wg.Add(1)
 	go func() {
 	watchloop:
@@ -254,6 +256,6 @@ func TailLogToStdout(LogFile string) {
 	}
 
 	for line := range t.Lines {
-		log.WithField("logfile", filepath.Base(LogFile)).Info(line)
+		log.WithField("logfile", filepath.Base(LogFile)).Info(line.Text)
 	}
 }
