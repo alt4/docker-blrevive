@@ -32,7 +32,7 @@ docker run -it -v /srv/blacklightre/:/mnt/blacklightre/ mcr.microsoft.com/dotnet
   && curl -L -O https://github.com/SteamRE/DepotDownloader/releases/download/DepotDownloader_2.4.7/depotdownloader-2.4.7.zip \
   && unzip depotdownloader-2.4.7.zip \
   && curl -LO https://gitlab.com/-/snippets/2529720/raw/main/filelist.txt \
-  && dotnet DepotDownloader.dll -app 209870 -username $STEAM_USERNAME -filelist filelist.txt \
+  && dotnet DepotDownloader.dll -app 209870 -depot 209871 -manifest 8740515310020658800 -username $STEAM_USERNAME -filelist filelist.txt \
   && mv depots/209871/2520205/* /mnt/blacklightre/"
 ```
 
